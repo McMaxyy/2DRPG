@@ -39,12 +39,48 @@ public class Storage {
     }    
     
     public static void loadAssets() {
-        // Load the assets required for the game
-        assetManager.load("A.png", Texture.class);
-        assetManager.load("B.png", Texture.class);
-        assetManager.load("C.png", Texture.class);
-        assetManager.load("D.png", Texture.class);
-        
+        // Walking animations
+        assetManager.load("character/Walking/Minotaur_01_Walking_000.png", Texture.class);
+        assetManager.load("character/Walking/Minotaur_01_Walking_001.png", Texture.class);
+        assetManager.load("character/Walking/Minotaur_01_Walking_002.png", Texture.class);
+        assetManager.load("character/Walking/Minotaur_01_Walking_003.png", Texture.class);
+        assetManager.load("character/Walking/Minotaur_01_Walking_004.png", Texture.class);
+        assetManager.load("character/Walking/Minotaur_01_Walking_005.png", Texture.class);
+        assetManager.load("character/Walking/Minotaur_01_Walking_006.png", Texture.class);
+        assetManager.load("character/Walking/Minotaur_01_Walking_007.png", Texture.class);
+        assetManager.load("character/Walking/Minotaur_01_Walking_008.png", Texture.class);
+        assetManager.load("character/Walking/Minotaur_01_Walking_009.png", Texture.class);
+        assetManager.load("character/Walking/Minotaur_01_Walking_010.png", Texture.class);
+        assetManager.load("character/Walking/Minotaur_01_Walking_011.png", Texture.class);
+        assetManager.load("character/Walking/Minotaur_01_Walking_012.png", Texture.class);
+        assetManager.load("character/Walking/Minotaur_01_Walking_013.png", Texture.class);
+        assetManager.load("character/Walking/Minotaur_01_Walking_014.png", Texture.class);
+        assetManager.load("character/Walking/Minotaur_01_Walking_015.png", Texture.class);
+        assetManager.load("character/Walking/Minotaur_01_Walking_016.png", Texture.class);
+        assetManager.load("character/Walking/Minotaur_01_Walking_017.png", Texture.class);
+       
+        // Idle animations
+        assetManager.load("character/Idle/Minotaur_01_Idle_000.png", Texture.class);
+        assetManager.load("character/Idle/Minotaur_01_Idle_001.png", Texture.class);
+        assetManager.load("character/Idle/Minotaur_01_Idle_002.png", Texture.class);
+        assetManager.load("character/Idle/Minotaur_01_Idle_003.png", Texture.class);
+        assetManager.load("character/Idle/Minotaur_01_Idle_004.png", Texture.class);
+        assetManager.load("character/Idle/Minotaur_01_Idle_005.png", Texture.class);
+        assetManager.load("character/Idle/Minotaur_01_Idle_006.png", Texture.class);
+        assetManager.load("character/Idle/Minotaur_01_Idle_007.png", Texture.class);
+        assetManager.load("character/Idle/Minotaur_01_Idle_008.png", Texture.class);
+        assetManager.load("character/Idle/Minotaur_01_Idle_009.png", Texture.class);
+        assetManager.load("character/Idle/Minotaur_01_Idle_010.png", Texture.class);
+        assetManager.load("character/Idle/Minotaur_01_Idle_011.png", Texture.class);
+
+        // Jumping animations
+        assetManager.load("character/Jump Loop/Minotaur_01_Jump Loop_000.png", Texture.class);
+        assetManager.load("character/Jump Loop/Minotaur_01_Jump Loop_001.png", Texture.class);
+        assetManager.load("character/Jump Loop/Minotaur_01_Jump Loop_002.png", Texture.class);
+        assetManager.load("character/Jump Loop/Minotaur_01_Jump Loop_003.png", Texture.class);
+        assetManager.load("character/Jump Loop/Minotaur_01_Jump Loop_004.png", Texture.class);
+        assetManager.load("character/Jump Loop/Minotaur_01_Jump Loop_005.png", Texture.class);
+
         // Load pre-generated bitmap font files (.fnt and .png)
         assetManager.load("fonts/Cascadia.fnt", BitmapFont.class);    
         

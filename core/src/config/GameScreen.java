@@ -9,89 +9,85 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 
 import game.GameProj;
 
-public class GameScreen implements Screen{
-	private Game game;
-	private Viewport viewport;
-	private GameProj gameP;
-	
-	private static final int MIN_WIDTH = 1280;
-	private static final int MIN_HEIGHT = 720;
-	private static final int MAX_WIDTH = 1080;
-    private static final int MAX_HEIGHT = 1920;
+public class GameScreen implements Screen {
+    private Game game;
+    private Viewport viewport;
+    private GameProj gameP;
+
+    private static final int MIN_WIDTH = 1280;
+    private static final int MIN_HEIGHT = 720;
     public static int SELECTED_WIDTH = MIN_WIDTH;
     public static int SELECTED_HEIGHT = MIN_HEIGHT;
-    
+
     private int currentState;
     public static final int HOME = 1;
 
-	public GameScreen(Game game) {
-		this.game = game;
-		viewport = new FitViewport(SELECTED_WIDTH, SELECTED_HEIGHT);
-		Gdx.graphics.setUndecorated(false);
-		Gdx.graphics.setWindowedMode(1280, 720);
-		setCurrentState(HOME);
-	}
-	
-	public void setCurrentState(int newState) {
-		currentState = newState;
-		
-		switch(currentState) {
-		case HOME:
-			this.gameP = new GameProj(viewport, game, this);
-            Gdx.input.setInputProcessor(gameP.stage);
-            break;
-		}
-	}
+    public GameScreen(Game game) {
+        this.game = game;
+        // Initialize viewport with the correct selected dimensions
+        viewport = new FitViewport(SELECTED_WIDTH, SELECTED_HEIGHT);
+        Gdx.graphics.setUndecorated(false);
+        Gdx.graphics.setWindowedMode(1280, 720);
+        setCurrentState(HOME);
+    }
 
-	@Override
-	public void show() {
-		// TODO Auto-generated method stub
-		
-	}
+    public void setCurrentState(int newState) {
+        currentState = newState;
 
-	@Override
-	public void render(float delta) {
-		Gdx.gl.glClearColor(55 / 255f, 55 / 255f, 55 / 255f, 1);
-	    Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-	    
-	    switch(currentState) {
-	    case HOME:
-	    	gameP.render(delta);
-	    	break;	
-	    }	
-	}
+        switch (currentState) {
+            case HOME:
+                this.gameP = new GameProj(viewport, game, this);
+                Gdx.input.setInputProcessor(gameP.stage);
+                break;
+        }
+    }
 
-	@Override
-	public void resize(int width, int height) {
-		int finalWidth = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, width));
-        int finalHeight = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, height));
+    @Override
+    public void show() {
+        // TODO Auto-generated method stub
 
-        viewport.update(finalWidth, finalHeight, true);
-        viewport.apply();
-        viewport.getCamera().update(); 
-		
-	}
+    }
 
-	@Override
-	public void pause() {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void render(float delta) {
+        // Clear the screen with the background color
+        Gdx.gl.glClearColor(55 / 255f, 55 / 255f, 55 / 255f, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-	@Override
-	public void resume() {
-		// TODO Auto-generated method stub
-		
-	}
+        switch (currentState) {
+            case HOME:
+                gameP.render(delta);
+                break;
+        }
+    }
 
-	@Override
-	public void hide() {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void resize(int width, int height) {
+        // Update the viewport to match the new window size
+        viewport.update(width, height, true);
+        viewport.apply();  // Ensure the viewport is applied correctly
+    }
 
-	@Override
-	public void dispose() {
-		gameP.dispose();
-	}
+    @Override
+    public void pause() {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void resume() {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void hide() {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void dispose() {
+        gameP.dispose();
+    }
 }
