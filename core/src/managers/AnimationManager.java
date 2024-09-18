@@ -26,7 +26,7 @@ public class AnimationManager {
         try {
             // Idle
             Array<TextureRegion> idleFrames = new Array<>();
-            for (int i = 0; i < 11; i++) {
+            for (int i = 0; i < 12; i++) {
                 Texture idleFrame;
                 if (i < 10) {
                     idleFrame = Storage.assetManager.get("character/Idle/Minotaur_01_Idle_00" + i + ".png", Texture.class);
@@ -36,11 +36,11 @@ public class AnimationManager {
                 idleFrame.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
                 idleFrames.add(new TextureRegion(idleFrame));
             }
-            idleAnimation = new Animation<>(0.1f, idleFrames, Animation.PlayMode.LOOP);
+            idleAnimation = new Animation<>(0.09f, idleFrames, Animation.PlayMode.LOOP);
 
             // Running
             Array<TextureRegion> runningFrames = new Array<>();
-            for (int i = 0; i < 17; i++) {
+            for (int i = 0; i < 18; i++) {
                 Texture runningFrame;
                 if (i < 10) {
                     runningFrame = Storage.assetManager.get("character/Walking/Minotaur_01_Walking_00" + i + ".png", Texture.class);
@@ -50,8 +50,7 @@ public class AnimationManager {
                 runningFrame.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
                 runningFrames.add(new TextureRegion(runningFrame));
             }
-            // Set smoother timing for running animation and loop it
-            runningAnimation = new Animation<>(0.075f, runningFrames, Animation.PlayMode.LOOP);
+            runningAnimation = new Animation<>(0.06f, runningFrames, Animation.PlayMode.LOOP);
 
             // Jumping
             Array<TextureRegion> jumpingFrames = new Array<>();
@@ -60,7 +59,7 @@ public class AnimationManager {
                 jumpingFrame.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
                 jumpingFrames.add(new TextureRegion(jumpingFrame));
             }
-            jumpingAnimation = new Animation<>(0.1f, jumpingFrames, Animation.PlayMode.LOOP);
+            jumpingAnimation = new Animation<>(0.075f, jumpingFrames, Animation.PlayMode.LOOP);
 
         } catch (GdxRuntimeException e) {
             System.out.println("Failed to load animation frames.");

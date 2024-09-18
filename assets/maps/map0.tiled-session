@@ -1,0 +1,42 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "Map0.tmx",
+    "expandedProjectPaths": [
+    ],
+    "fileStates": {
+        "Map0.tmx": {
+            "scale": 4,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 1338.25,
+                "y": 892.25
+            }
+        },
+        "tiles/IdkFloor.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        }
+    },
+    "last.imagePath": "C:/Users/Max/Documents/repos/2DRPG/assets/maps/tiles",
+    "map.height": 25,
+    "map.lastUsedFormat": "tmx",
+    "map.tileHeight": 48,
+    "map.tileWidth": 48,
+    "map.width": 40,
+    "openFiles": [
+        "tiles/IdkFloor.tsx",
+        "Map0.tmx"
+    ],
+    "project": "map0.tiled-project",
+    "property.type": "bool",
+    "recentFiles": [
+        "tiles/IdkFloor.tsx",
+        "Map0.tmx"
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.type": 1
+}
