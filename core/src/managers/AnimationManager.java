@@ -116,4 +116,8 @@ public class AnimationManager {
     public void resetAnimationTime() {
         animationTime = 0f;
     }
+
+	public boolean isFacingRight() {
+		return facingRight;
+	}
 }

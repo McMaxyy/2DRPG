@@ -80,4 +80,9 @@ project(":core") {
         api "com.badlogicgames.gdx:gdx-freetype:$gdxVersion"
         api "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
     }
+    
+	    dependencies {
+	    implementation "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
+	    implementation "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
+	}
 }

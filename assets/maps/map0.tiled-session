@@ -5,14 +5,26 @@
     },
     "activeFile": "Map0.tmx",
     "expandedProjectPaths": [
+        "."
     ],
     "fileStates": {
+        "C:/Users/Max/Documents/repos/2DRPG/level1.tmx": {
+            "scale": 0.25,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 1796,
+                "y": 568
+            }
+        },
+        "C:/Users/Max/Documents/repos/2DRPG/level1.tmx#tileSet-hd": {
+            "scaleInDock": 1
+        },
         "Map0.tmx": {
-            "scale": 4,
+            "scale": 0.5,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 1338.25,
-                "y": 892.25
+                "x": 1012,
+                "y": 1062
             }
         },
         "tiles/IdkFloor.tsx": {
@@ -35,7 +47,8 @@
     "property.type": "bool",
     "recentFiles": [
         "tiles/IdkFloor.tsx",
-        "Map0.tmx"
+        "Map0.tmx",
+        "C:/Users/Max/Documents/repos/2DRPG/level1.tmx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.type": 1
