@@ -34,12 +34,31 @@ public class Storage {
         skin = new Skin(Gdx.files.internal("buttons/newskin/newskin.json"));    
         if(newLoad) {
             newLoad = false;
-            loadAssets();
+            loadPlayerAssets();
+            loadEnemyAssets();
         }        
     }    
     
-    public static void loadAssets() {
-        // Walking animations
+    private static void loadEnemyAssets() {
+		// Wraith animations
+    	assetManager.load("enemies/Pedro/Walking/Wraith_02_Moving Forward_000.png", Texture.class);
+    	assetManager.load("enemies/Pedro/Walking/Wraith_02_Moving Forward_001.png", Texture.class);
+    	assetManager.load("enemies/Pedro/Walking/Wraith_02_Moving Forward_002.png", Texture.class);
+    	assetManager.load("enemies/Pedro/Walking/Wraith_02_Moving Forward_003.png", Texture.class);
+    	assetManager.load("enemies/Pedro/Walking/Wraith_02_Moving Forward_004.png", Texture.class);
+    	assetManager.load("enemies/Pedro/Walking/Wraith_02_Moving Forward_005.png", Texture.class);
+    	assetManager.load("enemies/Pedro/Walking/Wraith_02_Moving Forward_006.png", Texture.class);
+    	assetManager.load("enemies/Pedro/Walking/Wraith_02_Moving Forward_007.png", Texture.class);
+    	assetManager.load("enemies/Pedro/Walking/Wraith_02_Moving Forward_008.png", Texture.class);
+    	assetManager.load("enemies/Pedro/Walking/Wraith_02_Moving Forward_009.png", Texture.class);
+    	assetManager.load("enemies/Pedro/Walking/Wraith_02_Moving Forward_010.png", Texture.class);
+    	assetManager.load("enemies/Pedro/Walking/Wraith_02_Moving Forward_011.png", Texture.class);
+
+    	assetManager.finishLoading();
+	}
+
+	public static void loadPlayerAssets() {   	
+        // Walking animation
         assetManager.load("character/Walking/Minotaur_01_Walking_000.png", Texture.class);
         assetManager.load("character/Walking/Minotaur_01_Walking_001.png", Texture.class);
         assetManager.load("character/Walking/Minotaur_01_Walking_002.png", Texture.class);
@@ -59,7 +78,7 @@ public class Storage {
         assetManager.load("character/Walking/Minotaur_01_Walking_016.png", Texture.class);
         assetManager.load("character/Walking/Minotaur_01_Walking_017.png", Texture.class);
        
-        // Idle animations
+        // Idle animation
         assetManager.load("character/Idle/Minotaur_01_Idle_000.png", Texture.class);
         assetManager.load("character/Idle/Minotaur_01_Idle_001.png", Texture.class);
         assetManager.load("character/Idle/Minotaur_01_Idle_002.png", Texture.class);
@@ -73,13 +92,44 @@ public class Storage {
         assetManager.load("character/Idle/Minotaur_01_Idle_010.png", Texture.class);
         assetManager.load("character/Idle/Minotaur_01_Idle_011.png", Texture.class);
 
-        // Jumping animations
+        // Jumping animation
         assetManager.load("character/Jump Loop/Minotaur_01_Jump Loop_000.png", Texture.class);
         assetManager.load("character/Jump Loop/Minotaur_01_Jump Loop_001.png", Texture.class);
         assetManager.load("character/Jump Loop/Minotaur_01_Jump Loop_002.png", Texture.class);
         assetManager.load("character/Jump Loop/Minotaur_01_Jump Loop_003.png", Texture.class);
         assetManager.load("character/Jump Loop/Minotaur_01_Jump Loop_004.png", Texture.class);
         assetManager.load("character/Jump Loop/Minotaur_01_Jump Loop_005.png", Texture.class);
+        
+        // Attack animation
+        assetManager.load("character/Attacking/Minotaur_01_Attacking_000.png", Texture.class);
+        assetManager.load("character/Attacking/Minotaur_01_Attacking_001.png", Texture.class);
+        assetManager.load("character/Attacking/Minotaur_01_Attacking_002.png", Texture.class);
+        assetManager.load("character/Attacking/Minotaur_01_Attacking_003.png", Texture.class);
+        assetManager.load("character/Attacking/Minotaur_01_Attacking_004.png", Texture.class);
+        assetManager.load("character/Attacking/Minotaur_01_Attacking_005.png", Texture.class);
+        assetManager.load("character/Attacking/Minotaur_01_Attacking_006.png", Texture.class);
+        assetManager.load("character/Attacking/Minotaur_01_Attacking_007.png", Texture.class);
+        assetManager.load("character/Attacking/Minotaur_01_Attacking_008.png", Texture.class);
+        assetManager.load("character/Attacking/Minotaur_01_Attacking_009.png", Texture.class);
+        assetManager.load("character/Attacking/Minotaur_01_Attacking_010.png", Texture.class);
+        assetManager.load("character/Attacking/Minotaur_01_Attacking_011.png", Texture.class);
+
+        // Dying animation
+        assetManager.load("character/Dying/Minotaur_01_Dying_000.png", Texture.class);
+        assetManager.load("character/Dying/Minotaur_01_Dying_001.png", Texture.class);
+        assetManager.load("character/Dying/Minotaur_01_Dying_002.png", Texture.class);
+        assetManager.load("character/Dying/Minotaur_01_Dying_003.png", Texture.class);
+        assetManager.load("character/Dying/Minotaur_01_Dying_004.png", Texture.class);
+        assetManager.load("character/Dying/Minotaur_01_Dying_005.png", Texture.class);
+        assetManager.load("character/Dying/Minotaur_01_Dying_006.png", Texture.class);
+        assetManager.load("character/Dying/Minotaur_01_Dying_007.png", Texture.class);
+        assetManager.load("character/Dying/Minotaur_01_Dying_008.png", Texture.class);
+        assetManager.load("character/Dying/Minotaur_01_Dying_009.png", Texture.class);
+        assetManager.load("character/Dying/Minotaur_01_Dying_010.png", Texture.class);
+        assetManager.load("character/Dying/Minotaur_01_Dying_011.png", Texture.class);
+        assetManager.load("character/Dying/Minotaur_01_Dying_012.png", Texture.class);
+        assetManager.load("character/Dying/Minotaur_01_Dying_013.png", Texture.class);
+        assetManager.load("character/Dying/Minotaur_01_Dying_014.png", Texture.class);
 
         // Load pre-generated bitmap font files (.fnt and .png)
         assetManager.load("fonts/Cascadia.fnt", BitmapFont.class);    
@@ -88,17 +138,14 @@ public class Storage {
     }
     
     public void createFont() {
-        // Load the BitmapFont from the asset manager instead of generating it
         font = assetManager.get("fonts/Cascadia.fnt", BitmapFont.class);
         
-        // Load textures for button styles
         Texture borderTextureUp = new Texture(Gdx.files.internal("buttons/newskin/newskin_data/textbutton.9.png"));
         Texture borderTextureDown = new Texture(Gdx.files.internal("buttons/newskin/newskin_data/textbutton-down.9.png"));
         
         NinePatch borderPatchUp = new NinePatch(borderTextureUp, 1, 1, 1, 1);
         NinePatch borderPatchDown = new NinePatch(borderTextureDown, 1, 1, 1, 1);
       
-        // Set the styles for TextButton, Label, and TextField
         buttonStyle = new TextButton.TextButtonStyle(skin.get(TextButton.TextButtonStyle.class));
         buttonStyle.up = new NinePatchDrawable(borderPatchUp);
         buttonStyle.down = new NinePatchDrawable(borderPatchDown);

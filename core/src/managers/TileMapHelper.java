@@ -15,6 +15,7 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.Shape;
 
 import game.GameProj;
+import objects.enemies.Pedro;
 import objects.player.Player;
 
 public class TileMapHelper {
@@ -42,16 +43,35 @@ public class TileMapHelper {
 				Rectangle rectangle = ((RectangleMapObject) object).getRectangle();
 				String rectangleName = object.getName();
 				
-				if(rectangleName.equals("player")) {
-					Body body = BodyHelperService.createBody(
-							rectangle.getX() + rectangle.getWidth() / 2,
-							rectangle.getY() + rectangle.getHeight() / 2,
-							rectangle.getWidth(),
-							rectangle.getHeight(),
-							false,
-							gameP.getWorld());
-					gameP.setPlayer(new Player(rectangle.getWidth(), rectangle.getHeight(), body));
+				if (rectangleName.equals("player")) {
+				    Body body = BodyHelperService.createBody(
+				        rectangle.getX() + rectangle.getWidth() / 2,
+				        rectangle.getY() + rectangle.getHeight() / 2,
+				        rectangle.getWidth(),
+				        rectangle.getHeight(),
+				        false,
+				        gameP.getWorld());
+
+				    Player player = new Player(rectangle.getWidth(), rectangle.getHeight(), body);
+				    body.setUserData(player);
+				    gameP.setPlayer(player);
 				}
+				
+				if (rectangleName.equals("pedro")) {
+				    Body body = BodyHelperService.createBody(
+				        rectangle.getX() + rectangle.getWidth() / 2,
+				        rectangle.getY() + rectangle.getHeight() / 2,
+				        rectangle.getWidth(),
+				        rectangle.getHeight(),
+				        false,
+				        gameP.getWorld());
+
+				    Pedro pedro = new Pedro(rectangle.getWidth(), rectangle.getHeight(), body);
+				    body.setUserData(pedro);
+
+				    gameP.setPedro(pedro);
+				}
+
 			}
 		}
 	}

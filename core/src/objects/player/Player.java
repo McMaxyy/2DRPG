@@ -5,6 +5,8 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
+
+import game.GameProj;
 import managers.AnimationManager;
 import managers.AnimationManager.State;
 import objects.GameEntity;
@@ -13,6 +15,7 @@ public class Player extends GameEntity {
 
     private int jumpCounter;
     private AnimationManager animationManager;
+    private boolean isRunning, isDead;
 
     public Player(float width, float height, Body body) {
         super(width, height, body);
@@ -35,25 +38,29 @@ public class Player extends GameEntity {
     public void render(SpriteBatch batch) {
         batch.begin();
         batch.draw(animationManager.getCurrentFrame(), 
-                    x - width * 1.25f, y - height / 1.65f, // Position
-                    width * 2.5f, height * 1.3f); // Size
+                    x - width * 1.25f, y - height / 1.65f,
+                    width * 2.5f, height * 1.3f);
         batch.end();
     }
 
     private void checkUserInput() {
         velX = 0;
 
-        // Movement Input
         if (Gdx.input.isKeyPressed(Input.Keys.D)) {
             velX = 1;
-            animationManager.setFacingRight(true);  // Facing right
+            animationManager.setFacingRight(true);
+            isRunning = true;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.A)) {
             velX = -1;
-            animationManager.setFacingRight(false); // Facing left
+            animationManager.setFacingRight(false);
+            isRunning = true;
+        }
+        
+        if(Gdx.input.isTouched(Input.Buttons.LEFT) && !isRunning) {
+        	animationManager.setState(State.ATTACKING);
         }
 
-        // Jump Input
         if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) && jumpCounter < 2) {
             float force = body.getMass() * 4.5f;
             body.setLinearVelocity(body.getLinearVelocity().x, 0);
@@ -61,27 +68,35 @@ public class Player extends GameEntity {
             jumpCounter++;
         }
 
-        // Reset jumpCounter when player is grounded
         if (body.getLinearVelocity().y == 0) {
             jumpCounter = 0;
         }
 
-        // Set player's velocity based on input
         body.setLinearVelocity(velX * speed, body.getLinearVelocity().y < 25 ? body.getLinearVelocity().y : 25);
     }
 
     private void updateAnimationState() {
-        // Check if player is jumping
-        if (body.getLinearVelocity().y != 0) {
-            animationManager.setState(State.JUMPING);
+        if (animationManager.getState() == AnimationManager.State.ATTACKING) {
+            if (animationManager.isAnimationFinished()) {
+                animationManager.setState(AnimationManager.State.IDLE);
+                isRunning = false;
+            }
+        } else if (animationManager.getState() == AnimationManager.State.DYING) {
+            if (animationManager.isAnimationFinished()) {
+            	animationManager.setState(AnimationManager.State.IDLE);
+            }
+        } else if (body.getLinearVelocity().y != 0) {
+            animationManager.setState(AnimationManager.State.JUMPING);
+        } else if (velX != 0) {
+            animationManager.setState(AnimationManager.State.RUNNING);
+        } else {
+            animationManager.setState(AnimationManager.State.IDLE);
+            isRunning = false;
         }
-        // Check if player is moving left or right
-        else if (velX != 0) {
-            animationManager.setState(State.RUNNING);
-        }
-        // Player is idle
-        else {
-            animationManager.setState(State.IDLE);
-        }
+    }
+
+    public void die() {
+    	animationManager.setState(AnimationManager.State.DYING);
+    	isDead = true;
     }
 }
