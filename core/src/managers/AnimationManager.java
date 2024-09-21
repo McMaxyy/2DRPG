@@ -14,6 +14,7 @@ public class AnimationManager {
     private Animation<TextureRegion> attackingAnimation;
     private Animation<TextureRegion> dyingAnimation;
     private Animation<TextureRegion> pedroRunningAnimation;
+    private Animation<TextureRegion> pedroDyingAnimation;
     private float animationTime = 0f;
     private float pedroAnimationTime = 0f;
     private boolean facingRight = true, pedroFacingRight = true;   
@@ -21,7 +22,7 @@ public class AnimationManager {
         IDLE, RUNNING, JUMPING, ATTACKING, DYING
     }
     public enum PedroState {
-    	RUNNING
+    	RUNNING, DYING
     }
     private State currentState = State.IDLE;
     private PedroState pedroCurrentState = PedroState.RUNNING;
@@ -45,6 +46,19 @@ public class AnimationManager {
                 runningFrames.add(new TextureRegion(runningFrame));
             }
             pedroRunningAnimation = new Animation<>(0.06f, runningFrames, Animation.PlayMode.LOOP);
+            
+            Array<TextureRegion> dyingFrames = new Array<>();
+            for (int i = 0; i < 15; i++) {
+                Texture dyingFrame;
+                if (i < 10) {
+                	dyingFrame = Storage.assetManager.get("enemies/Pedro/Dying/Wraith_02_Dying_00" + i + ".png", Texture.class);
+                } else {
+                	dyingFrame = Storage.assetManager.get("enemies/Pedro/Dying/Wraith_02_Dying_0" + i + ".png", Texture.class);
+                }
+                dyingFrame.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+                dyingFrames.add(new TextureRegion(dyingFrame));
+            }
+            pedroDyingAnimation = new Animation<>(0.06f, dyingFrames, Animation.PlayMode.NORMAL);
 
         } catch (GdxRuntimeException e) {
             System.out.println("Failed to load Pedro animation frames.");
@@ -125,7 +139,6 @@ public class AnimationManager {
 
 
 	public void update(float delta) {
-        // Update both player and Pedro animation times
         animationTime += delta;
         pedroAnimationTime += delta;
     }
@@ -194,16 +207,31 @@ public class AnimationManager {
     }
 
     public TextureRegion getPedroCurrentFrame() {
-        TextureRegion currentFrame = pedroRunningAnimation.getKeyFrame(pedroAnimationTime);
+        Animation<TextureRegion> currentPedroAnimation;
 
-        if (pedroFacingRight && currentFrame.isFlipX()) {
-            currentFrame.flip(true, false);
-        } else if (!pedroFacingRight && !currentFrame.isFlipX()) {
-            currentFrame.flip(true, false);
+        switch (pedroCurrentState) {
+            case DYING:
+                currentPedroAnimation = pedroDyingAnimation;
+                break;
+            case RUNNING:
+                currentPedroAnimation = pedroRunningAnimation;
+                break;
+            default:
+                currentPedroAnimation = pedroRunningAnimation;
+                break;
         }
 
-        return currentFrame;
+        TextureRegion currentPedroFrame = currentPedroAnimation.getKeyFrame(pedroAnimationTime);
+
+        if (pedroFacingRight && currentPedroFrame.isFlipX()) {
+            currentPedroFrame.flip(true, false);
+        } else if (!pedroFacingRight && !currentPedroFrame.isFlipX()) {
+            currentPedroFrame.flip(true, false);
+        }
+
+        return currentPedroFrame;
     }
+
 
     public void resetAnimationTime() {
         animationTime = 0f;
@@ -230,6 +258,17 @@ public class AnimationManager {
     }
 
     public boolean isPedroAnimationFinished() {
-        return pedroRunningAnimation.isAnimationFinished(pedroAnimationTime);
+        switch (pedroCurrentState) {
+	        case DYING:
+	            return pedroDyingAnimation.isAnimationFinished(pedroAnimationTime);
+	        case RUNNING:
+	            return pedroRunningAnimation.isAnimationFinished(pedroAnimationTime);
+	        default:
+            return pedroRunningAnimation.isAnimationFinished(pedroAnimationTime);
+        }
     }
+
+	public boolean isFacingRight() {
+		return facingRight;
+	}
 }

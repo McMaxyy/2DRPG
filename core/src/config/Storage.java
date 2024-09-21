@@ -21,7 +21,8 @@ public class Storage {
     public TextFieldStyle textStyle;
     public BitmapFont font;
     public static AssetManager assetManager = new AssetManager();
-    private static boolean newLoad = true;    
+    private static boolean newLoad = true; 
+    private static int levelNum = 1;
     
     public static synchronized Storage getInstance()  {
         if (instance == null) {
@@ -53,6 +54,23 @@ public class Storage {
     	assetManager.load("enemies/Pedro/Walking/Wraith_02_Moving Forward_009.png", Texture.class);
     	assetManager.load("enemies/Pedro/Walking/Wraith_02_Moving Forward_010.png", Texture.class);
     	assetManager.load("enemies/Pedro/Walking/Wraith_02_Moving Forward_011.png", Texture.class);
+
+    	// Wraith dying
+    	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_000.png", Texture.class);
+    	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_001.png", Texture.class);
+    	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_002.png", Texture.class);
+    	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_003.png", Texture.class);
+    	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_004.png", Texture.class);
+    	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_005.png", Texture.class);
+    	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_006.png", Texture.class);
+    	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_007.png", Texture.class);
+    	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_008.png", Texture.class);
+    	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_009.png", Texture.class);
+    	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_010.png", Texture.class);
+    	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_011.png", Texture.class);
+    	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_012.png", Texture.class);
+    	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_013.png", Texture.class);
+    	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_014.png", Texture.class);
 
     	assetManager.finishLoading();
 	}
@@ -157,4 +175,16 @@ public class Storage {
         textStyle = new TextField.TextFieldStyle(skin.get(TextField.TextFieldStyle.class));
         textStyle.font = font;  
     }
+    
+    public BitmapFont getFont() {
+    	return font;
+    }
+
+	public static int getLevelNum() {
+		return levelNum;
+	}
+
+	public static void setLevelNum(int levelNum) {
+		Storage.levelNum = levelNum;
+	}
 }

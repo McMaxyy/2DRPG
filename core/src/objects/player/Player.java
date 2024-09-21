@@ -5,23 +5,43 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.badlogic.gdx.physics.box2d.World;
 
-import game.GameProj;
 import managers.AnimationManager;
 import managers.AnimationManager.State;
 import objects.GameEntity;
 
 public class Player extends GameEntity {
-
+    private float initialX, initialY;
     private int jumpCounter;
     private AnimationManager animationManager;
     private boolean isRunning, isDead;
+    public static boolean death = false;
+    private Body swordBody;
+    private World world;
+    private float swingAngle;
 
-    public Player(float width, float height, Body body) {
+    public Player(float width, float height, Body body, float initialX, float initialY, World world) {
         super(width, height, body);
         this.speed = 3f;
         this.jumpCounter = 0;
         this.animationManager = new AnimationManager();
+        this.initialX = initialX;
+        this.initialY = initialY;
+        this.world = world;
+        this.swordBody = null;
+    }
+    
+    public void respawn() {
+    	removeSword();
+        body.setTransform(initialX / 100f, initialY / 100f, 0);
+        isDead = false;
+        death = false;
+        jumpCounter = 0;
+        getAnimationManager().setState(AnimationManager.State.IDLE);
     }
 
     @Override
@@ -31,72 +51,158 @@ public class Player extends GameEntity {
 
         checkUserInput();
         updateAnimationState();
-        animationManager.update(Gdx.graphics.getDeltaTime());
+        getAnimationManager().update(Gdx.graphics.getDeltaTime());
+        
+        if (getAnimationManager().getState() == AnimationManager.State.ATTACKING) {
+            rotateSword(Gdx.graphics.getDeltaTime());
+        }
     }
 
     @Override
     public void render(SpriteBatch batch) {
-        batch.begin();
-        batch.draw(animationManager.getCurrentFrame(), 
-                    x - width * 1.25f, y - height / 1.65f,
-                    width * 2.5f, height * 1.3f);
-        batch.end();
+    	if(!death) {
+    		batch.begin();
+            batch.draw(getAnimationManager().getCurrentFrame(), 
+                        x - width * 1.25f, y - height / 1.65f,
+                        width * 2.5f, height * 1.3f);
+            batch.end();
+    	}     
     }
 
     private void checkUserInput() {
-        velX = 0;
+    	if(!isDead) {
+    		velX = 0;
 
-        if (Gdx.input.isKeyPressed(Input.Keys.D)) {
-            velX = 1;
-            animationManager.setFacingRight(true);
-            isRunning = true;
+            if (Gdx.input.isKeyPressed(Input.Keys.D)) {
+                velX = 1;
+                getAnimationManager().setFacingRight(true);
+                isRunning = true;
+            }
+            if (Gdx.input.isKeyPressed(Input.Keys.A)) {
+                velX = -1;
+                getAnimationManager().setFacingRight(false);
+                isRunning = true;
+            }
+
+            if (Gdx.input.isTouched(Input.Buttons.LEFT)) {
+                getAnimationManager().setState(State.ATTACKING);
+                createSword();  
+            }
+
+            if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) && jumpCounter < 2) {
+                float force = body.getMass() * 4.5f;
+                body.setLinearVelocity(body.getLinearVelocity().x, 0);
+                body.applyLinearImpulse(new Vector2(0, force), body.getPosition(), true);
+                jumpCounter++;
+            }
+
+            if (body.getLinearVelocity().y == 0) {
+                jumpCounter = 0;
+            }
+
+            body.setLinearVelocity(velX * speed, body.getLinearVelocity().y < 25 ? body.getLinearVelocity().y : 25);
+    	}      
+    }
+    
+    private void createSword() {
+        if (swordBody != null) {
+            return;
         }
-        if (Gdx.input.isKeyPressed(Input.Keys.A)) {
-            velX = -1;
-            animationManager.setFacingRight(false);
-            isRunning = true;
-        }
+
+        BodyDef swordBodyDef = new BodyDef();
+        swordBodyDef.type = BodyDef.BodyType.KinematicBody;
+        swordBodyDef.position.set(body.getPosition().x, body.getPosition().y);
+
+        swordBody = world.createBody(swordBodyDef);
         
-        if(Gdx.input.isTouched(Input.Buttons.LEFT) && !isRunning) {
-        	animationManager.setState(State.ATTACKING);
-        }
+        PolygonShape swordShape = new PolygonShape();
 
-        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) && jumpCounter < 2) {
-            float force = body.getMass() * 4.5f;
-            body.setLinearVelocity(body.getLinearVelocity().x, 0);
-            body.applyLinearImpulse(new Vector2(0, force), body.getPosition(), true);
-            jumpCounter++;
-        }
+        float swordOffsetX = getAnimationManager().isFacingRight() ? 0.3f : -0.3f;
+        swordShape.setAsBox(0.25f, 0.05f, new Vector2(swordOffsetX, 0), 0);
 
-        if (body.getLinearVelocity().y == 0) {
-            jumpCounter = 0;
-        }
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.shape = swordShape;
+        fixtureDef.density = 1f;
+        fixtureDef.isSensor = true;
 
-        body.setLinearVelocity(velX * speed, body.getLinearVelocity().y < 25 ? body.getLinearVelocity().y : 25);
+        swordBody.createFixture(fixtureDef);
+        swordShape.dispose();
+
+        swingAngle = getAnimationManager().isFacingRight() ? 80f : -80f;
+    }
+
+    private void rotateSword(float deltaTime) {
+        if (swordBody != null) {
+            float rotationSpeed = 180f;
+            swingAngle += getAnimationManager().isFacingRight() ? -rotationSpeed * deltaTime : rotationSpeed * deltaTime;
+
+            if (getAnimationManager().isFacingRight()) {
+                if (swingAngle >= -20) {
+                    swordBody.setTransform(body.getPosition(), (float) Math.toRadians(swingAngle));
+                } else {
+                    removeSword();
+                }
+            } else {
+                if (swingAngle <= 20) {
+                    swordBody.setTransform(body.getPosition(), (float) Math.toRadians(swingAngle));
+                } else {
+                    removeSword();
+                }
+            }
+        }
+    }
+
+    private void removeSword() {
+        if (swordBody != null) {
+            world.destroyBody(swordBody);
+            swordBody = null;
+        }
     }
 
     private void updateAnimationState() {
-        if (animationManager.getState() == AnimationManager.State.ATTACKING) {
-            if (animationManager.isAnimationFinished()) {
-                animationManager.setState(AnimationManager.State.IDLE);
-                isRunning = false;
+        if (isDead()) {
+            if (getAnimationManager().isAnimationFinished()) {
+                death = true;
             }
-        } else if (animationManager.getState() == AnimationManager.State.DYING) {
-            if (animationManager.isAnimationFinished()) {
-            	animationManager.setState(AnimationManager.State.IDLE);
+            return;
+        }
+
+        if (getAnimationManager().getState() == AnimationManager.State.ATTACKING) {
+            if (getAnimationManager().isAnimationFinished()) {
+                getAnimationManager().setState(AnimationManager.State.IDLE);
+                isRunning = false;
+                removeSword();
             }
         } else if (body.getLinearVelocity().y != 0) {
-            animationManager.setState(AnimationManager.State.JUMPING);
+            getAnimationManager().setState(AnimationManager.State.JUMPING);
         } else if (velX != 0) {
-            animationManager.setState(AnimationManager.State.RUNNING);
+            getAnimationManager().setState(AnimationManager.State.RUNNING);
         } else {
-            animationManager.setState(AnimationManager.State.IDLE);
+            getAnimationManager().setState(AnimationManager.State.IDLE);
             isRunning = false;
         }
     }
 
+
     public void die() {
-    	animationManager.setState(AnimationManager.State.DYING);
-    	isDead = true;
+        if (!isDead) {
+            isDead = true;
+            getAnimationManager().setState(AnimationManager.State.DYING);
+            body.setLinearVelocity(0, 0);
+        }
     }
+    
+    public void checkRespawn() {
+        if (isDead && getAnimationManager().isAnimationFinished()) {
+            respawn();
+        }
+    }
+    
+    public boolean isDead() {
+    	return isDead;
+    }
+
+	public AnimationManager getAnimationManager() {
+		return animationManager;
+	}
 }

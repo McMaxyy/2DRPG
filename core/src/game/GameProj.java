@@ -41,8 +41,10 @@ public class GameProj implements Screen, ContactListener {
     private Box2DDebugRenderer box2DDebugRenderer;
     private Player player;
     private Pedro pedro;
+    private GameScreen gameScreen;
     
     public GameProj(Viewport viewport, Game game, GameScreen gameScreen) {
+    	this.gameScreen = gameScreen;
         this.vp = viewport;
         stage = new Stage(viewport);
         this.world = new World(new Vector2(0, -9.81f), true);
@@ -53,7 +55,7 @@ public class GameProj implements Screen, ContactListener {
         eBatch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
         this.mapHelper = new TileMapHelper(this);
-        this.mapRenderer = mapHelper.setupMap();
+        this.mapRenderer = mapHelper.setupMap(Storage.getLevelNum());
         this.box2DDebugRenderer = new Box2DDebugRenderer();
         world.setContactListener(this);
 
@@ -62,19 +64,31 @@ public class GameProj implements Screen, ContactListener {
     }
     
     private void cameraUpdate() {
-    	Vector3 position = camera.position;
+		Vector3 position = camera.position;
     	position.x = Math.round(player.getBody().getPosition().x * 100.0f * 10) / 10f;
     	position.y = Math.round(player.getBody().getPosition().y * 100.0f * 10) / 10f;
     	camera.position.set(position);
-        camera.update();
+        camera.update();   	
+    }
+    
+    private void renderGameOver() {
+    	
+//    	gameScreen.switchToNewState(GameScreen.START);
     }
 
+
     @Override
-    public void render(float delta) {
+    public void render(float delta) {  
+    	if (Player.death) {
+    		player.checkRespawn(); 
+//            renderGameOver();
+            return;
+        }
+    	
         ScreenUtils.clear(0.2f, 0.2f, 0.2f, 1);
         cameraUpdate();
         
-        world.step(TIME_STEP, 6, 2);    
+        world.step(TIME_STEP, 6, 2);   
         
         mapRenderer.setView(camera);
         mapRenderer.render();
@@ -117,7 +131,11 @@ public class GameProj implements Screen, ContactListener {
     @Override
     public void dispose() {
         batch.dispose();
+        eBatch.dispose();
         shapeRenderer.dispose();
+        mapRenderer.dispose();
+        box2DDebugRenderer.dispose();
+        world.dispose();
     }
 
 	public World getWorld() {
@@ -142,8 +160,27 @@ public class GameProj implements Screen, ContactListener {
 	    
 	    boolean isPlayerA = fixtureA.getBody().getUserData() instanceof Player;
 	    boolean isPlayerB = fixtureB.getBody().getUserData() instanceof Player;
+	    
+	    boolean isLevel2A = "level2".equals(fixtureA.getBody().getUserData());
+	    boolean isLevel2B = "level2".equals(fixtureB.getBody().getUserData());
+	    
+	    if ((isPlayerA && isLevel2B) || (isPlayerB && isLevel2A)) {
+	        Storage.setLevelNum(2);
+	        gameScreen.switchToNewState(GameScreen.HOME);
+	    }
+	    
+	    if ((isPedroA && fixtureB.isSensor()) || (isPedroB && fixtureA.isSensor())) {
+	        Pedro pedro = isPedroA ? (Pedro) fixtureA.getBody().getUserData() : (Pedro) fixtureB.getBody().getUserData();
+	        pedro.die();
+	    }
 
-	    if ((isPedroA && isPlayerB) || (isPedroB && isPlayerA)) {
+	    if (isPedroA && !isPlayerB) {
+	        ((Pedro) fixtureA.getBody().getUserData()).reverseDirection();
+	    } else if (isPedroB && !isPlayerA) {
+	        ((Pedro) fixtureB.getBody().getUserData()).reverseDirection();
+	    }
+	    
+	    if ((isPedroA && isPlayerB) || (isPedroB && isPlayerA) && !Pedro.pedroDeath) {
 	        Player player = isPlayerA ? (Player) fixtureA.getBody().getUserData() : (Player) fixtureB.getBody().getUserData();
 	        player.die();
 	    }

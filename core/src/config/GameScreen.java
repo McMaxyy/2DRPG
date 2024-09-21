@@ -8,11 +8,13 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import game.GameProj;
+import game.StartMenu;
 
 public class GameScreen implements Screen {
     private Game game;
     private Viewport viewport;
     private GameProj gameP;
+    private StartMenu startMenu;
 
     private static final int MIN_WIDTH = 1280;
     private static final int MIN_HEIGHT = 720;
@@ -21,6 +23,7 @@ public class GameScreen implements Screen {
 
     private int currentState;
     public static final int HOME = 1;
+    public static final int START = 2;
 
     public GameScreen(Game game) {
         this.game = game;
@@ -35,11 +38,19 @@ public class GameScreen implements Screen {
         currentState = newState;
 
         switch (currentState) {
-            case HOME:
-                this.gameP = new GameProj(viewport, game, this);
-                Gdx.input.setInputProcessor(gameP.stage);
-                break;
+	        case HOME:
+	            gameP = new GameProj(viewport, game, this);
+	            Gdx.input.setInputProcessor(gameP.stage);
+	            break;
+	        case START:
+	            startMenu = new StartMenu(viewport, game, this);
+	            Gdx.input.setInputProcessor(startMenu.stage);
+	            break;
         }
+    }
+    
+    public void switchToNewState(int scene) {
+        setCurrentState(scene);
     }
 
     @Override
@@ -58,14 +69,16 @@ public class GameScreen implements Screen {
             case HOME:
                 gameP.render(delta);
                 break;
+            case START:
+                startMenu.render(delta);
+                break;
         }
     }
 
     @Override
     public void resize(int width, int height) {
-        // Update the viewport to match the new window size
         viewport.update(width, height, true);
-        viewport.apply();  // Ensure the viewport is applied correctly
+        viewport.apply();
     }
 
     @Override
@@ -89,5 +102,6 @@ public class GameScreen implements Screen {
     @Override
     public void dispose() {
         gameP.dispose();
+        startMenu.dispose();
     }
 }

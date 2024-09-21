@@ -19,24 +19,41 @@ import objects.enemies.Pedro;
 import objects.player.Player;
 
 public class TileMapHelper {
-	private TiledMap tiledMap;
+	private TiledMap map1, map2;
 	private GameProj gameP;
-	private static final float PPM = 100.0f; // adjust this value based on your game's scaling
+	private static final float PPM = 100.0f;
 	
 	public TileMapHelper(GameProj gameP) {
 		this.gameP = gameP;
 	}
 	
-	public OrthogonalTiledMapRenderer setupMap() {
-		tiledMap = new TmxMapLoader().load("maps/Map0.tmx");
-		parseMapObjects(tiledMap.getLayers().get("CollisionLayer").getObjects());
-		return new OrthogonalTiledMapRenderer(tiledMap);
+	public OrthogonalTiledMapRenderer setupMap(int mapNum) {
+//		map1 = new TmxMapLoader().load("maps/Map0.tmx");
+//		parseMapObjects(map1.getLayers().get("CollisionLayer").getObjects());
+//		parseMapObjects(map1.getLayers().get("Level2").getObjects());
+//		
+//		map2 = new TmxMapLoader().load("maps/Map1.tmx");
+//		parseMapObjects(map2.getLayers().get("CollisionLayer").getObjects());
+		
+		switch(mapNum) {
+		case 1:
+			map1 = new TmxMapLoader().load("maps/Map0.tmx");
+			parseMapObjects(map1.getLayers().get("CollisionLayer").getObjects());
+			parseMapObjects(map1.getLayers().get("Level2").getObjects());
+			return new OrthogonalTiledMapRenderer(map1);
+		case 2:
+			map2 = new TmxMapLoader().load("maps/Map1.tmx");
+			parseMapObjects(map2.getLayers().get("CollisionLayer").getObjects());
+			return new OrthogonalTiledMapRenderer(map2);
+		default:
+			return new OrthogonalTiledMapRenderer(map1);
+		}
 	}
 
 	private void parseMapObjects(MapObjects objects) {
 		for(MapObject object : objects) {
 			if(object instanceof PolygonMapObject) {
-				createStaticBody((PolygonMapObject) object);
+				createStaticBody((PolygonMapObject) object);			
 			}
 			
 			if(object instanceof RectangleMapObject) {
@@ -52,7 +69,7 @@ public class TileMapHelper {
 				        false,
 				        gameP.getWorld());
 
-				    Player player = new Player(rectangle.getWidth(), rectangle.getHeight(), body);
+				    Player player = new Player(rectangle.getWidth(), rectangle.getHeight(), body, rectangle.getX(), rectangle.getY(), gameP.getWorld());
 				    body.setUserData(player);
 				    gameP.setPlayer(player);
 				}
@@ -66,7 +83,7 @@ public class TileMapHelper {
 				        false,
 				        gameP.getWorld());
 
-				    Pedro pedro = new Pedro(rectangle.getWidth(), rectangle.getHeight(), body);
+				    Pedro pedro = new Pedro(rectangle.getWidth(), rectangle.getHeight(), body, rectangle.getX(), rectangle.getY());
 				    body.setUserData(pedro);
 
 				    gameP.setPedro(pedro);
@@ -80,6 +97,9 @@ public class TileMapHelper {
 		BodyDef bodyDef = new BodyDef();
 		bodyDef.type = BodyDef.BodyType.StaticBody;
 		Body body = gameP.getWorld().createBody(bodyDef);
+		if("level2".equals(polyMapObject.getName())) {
+			body.setUserData("level2");
+		}
 		Shape shape = createPolygonShape(polyMapObject);
 		body.createFixture(shape, 1000);
 		shape.dispose();
@@ -94,7 +114,7 @@ public class TileMapHelper {
 	        worldVertices[i] = current;
 	    }
 	    
-	    PolygonShape shape = new PolygonShape(); // Added parentheses
+	    PolygonShape shape = new PolygonShape();
 	    shape.set(worldVertices);
 	    return shape;
 	}
