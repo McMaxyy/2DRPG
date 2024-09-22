@@ -21,22 +21,29 @@
         },
         "Map0.tmx": {
             "expandedObjectLayers": [
+                7,
                 9,
-                7
+                10
+            ],
+            "scale": 0.5,
+            "selectedLayer": 4,
+            "viewCenter": {
+                "x": 778,
+                "y": 910
+            }
+        },
+        "Map1.tmx": {
+            "expandedObjectLayers": [
+                7,
+                9,
+                8,
+                6
             ],
             "scale": 0.33,
             "selectedLayer": 5,
             "viewCenter": {
-                "x": 1069.6969696969697,
-                "y": 551.5151515151515
-            }
-        },
-        "Map1.tmx": {
-            "scale": 0.33,
-            "selectedLayer": 4,
-            "viewCenter": {
-                "x": 1169.6969696969697,
-                "y": 615.1515151515151
+                "x": 1206.060606060606,
+                "y": 1048.4848484848485
             }
         },
         "tiles/IdkFloor.tsx": {

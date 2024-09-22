@@ -4,47 +4,40 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
-import com.badlogic.gdx.physics.box2d.Fixture;
 
 import managers.AnimationManager;
 import objects.GameEntity;
 
-public class Pedro extends GameEntity {
+public class Mlem extends GameEntity {
     private boolean movingLeft = true;
-    private float speed = 1.5f;
+    private float speed = 1.2f;
     private AnimationManager animationManager;
     private boolean isDead;
-    public boolean pedroDeath = false;
-    public boolean colliding = true;
+    public boolean mlemDeath = false;
     private float initialX, initialY;
     private float deathTimer = 0f;
-    private final float RESPAWN_DELAY = 2f;
     public boolean shouldDestroy = false;
+    private final float RESPAWN_DELAY = 2f;
 
-    public Pedro(float width, float height, Body body, float initialX, float initialY) {
+    public Mlem(float width, float height, Body body, float initialX, float initialY) {
         super(width, height, body);
         this.animationManager = new AnimationManager();
         this.initialX = initialX;
         this.initialY = initialY;
-        pedroDeath = false;
     }
 
     @Override
-    public void update() { 
-    	if(shouldDestroy) {
-    		return;
-    	}
-    	
+    public void update() {    	
         x = body.getPosition().x * 100.0f;
         y = body.getPosition().y * 100.0f;
         
-        if(!pedroDeath) {
+        if(!mlemDeath) {
         	if (movingLeft) {
                 body.setLinearVelocity(new Vector2(-speed, body.getLinearVelocity().y));
-                animationManager.setFacingRight(false, "Pedro");
+                animationManager.setFacingRight(false, "Mlem");
             } else {
                 body.setLinearVelocity(new Vector2(speed, body.getLinearVelocity().y));
-                animationManager.setFacingRight(true, "Pedro");
+                animationManager.setFacingRight(true, "Mlem");
             }
         }
                 
@@ -59,32 +52,28 @@ public class Pedro extends GameEntity {
 
     @Override
     public void render(SpriteBatch batch) {
-    	if (shouldDestroy) 
-    		return;
-    	
     	batch.begin();
-        batch.draw(animationManager.getPedroCurrentFrame(), 
-                    x - width * 1f, y - height / 1.25f,
-                    width * 2f, height * 1.45f);
+        batch.draw(animationManager.getMlemCurrentFrame(), 
+                    x - width * 1f, y - height / 1.9f,
+                    width * 2f, height * 1.2f);
         batch.end();
     }
     
     private void updateAnimationState() {
     	if (isDead()) {
-            if (getAnimationManager().isPedroAnimationFinished()) {
-            	shouldDestroy = true;
-//                deathTimer += Gdx.graphics.getDeltaTime();
-//                if (deathTimer >= RESPAWN_DELAY) {
-//                	checkRespawn();
-//                }             
+            if (getAnimationManager().isMlemAnimationFinished()) {
+                deathTimer += Gdx.graphics.getDeltaTime();
+                if (deathTimer >= RESPAWN_DELAY) {
+                	checkRespawn();
+                }             
             }
             return;
         } else
-        	getAnimationManager().setPedroState(AnimationManager.PedroState.RUNNING);	
+        	getAnimationManager().setMlemState(AnimationManager.MlemState.RUNNING);	
     }
     
     public void checkRespawn() {
-        if (isDead && getAnimationManager().isPedroAnimationFinished()) {
+        if (isDead && getAnimationManager().isMlemAnimationFinished()) {
             respawn();
         }
     }
@@ -92,17 +81,16 @@ public class Pedro extends GameEntity {
     private void respawn() {
     	body.setTransform(initialX / 100f, initialY / 100f, 0);
         isDead = false;
-        pedroDeath = false;
+        mlemDeath = false;
         deathTimer = 0f;       
-        getAnimationManager().setPedroState(AnimationManager.PedroState.RUNNING);		
+        getAnimationManager().setMlemState(AnimationManager.MlemState.RUNNING);		
 	}
 
 	public void die() {
 		if (!isDead) {
             isDead = true;
-            pedroDeath = true;
-            colliding = false;
-            getAnimationManager().setPedroState(AnimationManager.PedroState.DYING);
+            mlemDeath = true;
+            getAnimationManager().setMlemState(AnimationManager.MlemState.DYING);
             body.setLinearVelocity(0, 0);
         }
     }

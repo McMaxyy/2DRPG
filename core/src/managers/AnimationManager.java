@@ -15,17 +15,25 @@ public class AnimationManager {
     private Animation<TextureRegion> dyingAnimation;
     private Animation<TextureRegion> pedroRunningAnimation;
     private Animation<TextureRegion> pedroDyingAnimation;
+    private Animation<TextureRegion> mlemRunningAnimation;
+    private Animation<TextureRegion> mlemDyingAnimation;
+
     private float animationTime = 0f;
     private float pedroAnimationTime = 0f;
-    private boolean facingRight = true, pedroFacingRight = true;   
+    private float mlemAnimationTime = 0f;
+    private boolean facingRight = true, pedroFacingRight = true, mlemFacingRight = true;   
     public enum State {
         IDLE, RUNNING, JUMPING, ATTACKING, DYING
     }
     public enum PedroState {
     	RUNNING, DYING
     }
+    public enum MlemState {
+    	RUNNING, DYING
+    }
     private State currentState = State.IDLE;
     private PedroState pedroCurrentState = PedroState.RUNNING;
+    private MlemState mlemCurrentState = MlemState.RUNNING;
 
     public AnimationManager() {
     	loadEnemyAnimations();
@@ -60,6 +68,26 @@ public class AnimationManager {
             }
             pedroDyingAnimation = new Animation<>(0.06f, dyingFrames, Animation.PlayMode.NORMAL);
 
+            // Mlem walking
+            Texture mlemWalkingTexture = Storage.assetManager.get("enemies/Mlem/Walking.png", Texture.class);
+            mlemWalkingTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);           
+            TextureRegion[][] mlemWalkFrames = TextureRegion.split(mlemWalkingTexture, mlemWalkingTexture.getWidth() / 8, mlemWalkingTexture.getHeight());
+            Array<TextureRegion> mlemWalkingFrames = new Array<>();
+            for (int i = 0; i < 8; i++) {
+                mlemWalkingFrames.add(mlemWalkFrames[0][i]);
+            }
+            mlemRunningAnimation = new Animation<>(0.1f, mlemWalkingFrames, Animation.PlayMode.LOOP);
+            
+            // Mlem dying
+            Texture mlemDyingTexture = Storage.assetManager.get("enemies/Mlem/Dying.png", Texture.class);
+            mlemDyingTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);           
+            TextureRegion[][] mlemDieFrames = TextureRegion.split(mlemDyingTexture, mlemDyingTexture.getWidth() / 3, mlemDyingTexture.getHeight());
+            Array<TextureRegion> mlemDyingFrames = new Array<>();
+            for (int i = 0; i < 3; i++) {
+            	mlemDyingFrames.add(mlemDieFrames[0][i]);
+            }
+            mlemDyingAnimation = new Animation<>(0.05f, mlemDyingFrames, Animation.PlayMode.NORMAL);
+            
         } catch (GdxRuntimeException e) {
             System.out.println("Failed to load Pedro animation frames.");
         }		
@@ -141,27 +169,41 @@ public class AnimationManager {
 	public void update(float delta) {
         animationTime += delta;
         pedroAnimationTime += delta;
+        mlemAnimationTime += delta;
     }
 
-    public void setFacingRight(boolean isFacingRight) {
-        this.facingRight = isFacingRight;
-    }
-
-    public void setPedroFacingRight(boolean isFacingRight) {
-        this.pedroFacingRight = isFacingRight;
+    public void setFacingRight(boolean isFacingRight, String entity) {
+    	switch(entity) {
+    	case "Player":
+    		this.facingRight = isFacingRight;
+    		break;
+    	case "Pedro":
+    		this.pedroFacingRight = isFacingRight;
+    		break;
+    	case "Mlem":
+    		this.mlemFacingRight = isFacingRight;
+    		break;
+    	}       
     }
 
     public void setState(State newState) {
         if (newState != currentState) {
             currentState = newState;
-            resetAnimationTime();
+            animationTime = 0f;
         }
     }
 
     public void setPedroState(PedroState newState) {
         if (newState != pedroCurrentState) {
             pedroCurrentState = newState;
-            resetPedroAnimationTime();
+            pedroAnimationTime = 0f;
+        }
+    }
+    
+    public void setMlemState(MlemState newState) {
+        if (newState != mlemCurrentState) {
+            mlemCurrentState = newState;
+            mlemAnimationTime = 0f;
         }
     }
 
@@ -171,6 +213,10 @@ public class AnimationManager {
 
     public PedroState getPedroState() {
         return pedroCurrentState;
+    }
+    
+    public MlemState getMlemState() {
+    	return mlemCurrentState;
     }
 
     public TextureRegion getCurrentFrame() {
@@ -231,14 +277,31 @@ public class AnimationManager {
 
         return currentPedroFrame;
     }
+    
+    public TextureRegion getMlemCurrentFrame() {
+        Animation<TextureRegion> currentMlemAnimation;
 
+        switch (mlemCurrentState) {
+            case DYING:
+            	currentMlemAnimation = mlemDyingAnimation;
+                break;
+            case RUNNING:
+            	currentMlemAnimation = mlemRunningAnimation;
+                break;
+            default:
+            	currentMlemAnimation = mlemRunningAnimation;
+                break;
+        }
 
-    public void resetAnimationTime() {
-        animationTime = 0f;
-    }
+        TextureRegion currentMlemFrame = currentMlemAnimation.getKeyFrame(mlemAnimationTime);
 
-    public void resetPedroAnimationTime() {
-        pedroAnimationTime = 0f;
+        if (mlemFacingRight && currentMlemFrame.isFlipX()) {
+            currentMlemFrame.flip(true, false);
+        } else if (!mlemFacingRight && !currentMlemFrame.isFlipX()) {
+        	currentMlemFrame.flip(true, false);
+        }
+
+        return currentMlemFrame;
     }
 
     public boolean isAnimationFinished() {
@@ -265,6 +328,17 @@ public class AnimationManager {
 	            return pedroRunningAnimation.isAnimationFinished(pedroAnimationTime);
 	        default:
             return pedroRunningAnimation.isAnimationFinished(pedroAnimationTime);
+        }
+    }
+    
+    public boolean isMlemAnimationFinished() {
+        switch (mlemCurrentState) {
+	        case DYING:
+	            return mlemDyingAnimation.isAnimationFinished(mlemAnimationTime);
+	        case RUNNING:
+	            return mlemRunningAnimation.isAnimationFinished(mlemAnimationTime);
+	        default:
+            return mlemRunningAnimation.isAnimationFinished(mlemAnimationTime);
         }
     }
 

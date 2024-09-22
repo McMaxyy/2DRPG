@@ -75,12 +75,12 @@ public class Player extends GameEntity {
 
             if (Gdx.input.isKeyPressed(Input.Keys.D)) {
                 velX = 1;
-                getAnimationManager().setFacingRight(true);
+                getAnimationManager().setFacingRight(true, "Player");
                 isRunning = true;
             }
             if (Gdx.input.isKeyPressed(Input.Keys.A)) {
                 velX = -1;
-                getAnimationManager().setFacingRight(false);
+                getAnimationManager().setFacingRight(false, "Player");
                 isRunning = true;
             }
 

@@ -15,6 +15,7 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.Shape;
 
 import game.GameProj;
+import objects.enemies.Mlem;
 import objects.enemies.Pedro;
 import objects.player.Player;
 
@@ -28,22 +29,19 @@ public class TileMapHelper {
 	}
 	
 	public OrthogonalTiledMapRenderer setupMap(int mapNum) {
-//		map1 = new TmxMapLoader().load("maps/Map0.tmx");
-//		parseMapObjects(map1.getLayers().get("CollisionLayer").getObjects());
-//		parseMapObjects(map1.getLayers().get("Level2").getObjects());
-//		
-//		map2 = new TmxMapLoader().load("maps/Map1.tmx");
-//		parseMapObjects(map2.getLayers().get("CollisionLayer").getObjects());
-		
 		switch(mapNum) {
 		case 1:
 			map1 = new TmxMapLoader().load("maps/Map0.tmx");
 			parseMapObjects(map1.getLayers().get("CollisionLayer").getObjects());
 			parseMapObjects(map1.getLayers().get("Level2").getObjects());
+			parseMapObjects(map1.getLayers().get("EnemyWalls").getObjects());
 			return new OrthogonalTiledMapRenderer(map1);
 		case 2:
 			map2 = new TmxMapLoader().load("maps/Map1.tmx");
 			parseMapObjects(map2.getLayers().get("CollisionLayer").getObjects());
+			parseMapObjects(map2.getLayers().get("Level1").getObjects());
+			parseMapObjects(map2.getLayers().get("EnemyWalls").getObjects());
+			parseMapObjects(map2.getLayers().get("Death").getObjects());
 			return new OrthogonalTiledMapRenderer(map2);
 		default:
 			return new OrthogonalTiledMapRenderer(map1);
@@ -88,7 +86,36 @@ public class TileMapHelper {
 
 				    gameP.setPedro(pedro);
 				}
+				
+				if (rectangleName.equals("pedro2")) {
+				    Body body = BodyHelperService.createBody(
+				        rectangle.getX() + rectangle.getWidth() / 2,
+				        rectangle.getY() + rectangle.getHeight() / 2,
+				        rectangle.getWidth(),
+				        rectangle.getHeight(),
+				        false,
+				        gameP.getWorld());
 
+				    Pedro pedro = new Pedro(rectangle.getWidth(), rectangle.getHeight(), body, rectangle.getX(), rectangle.getY());
+				    body.setUserData(pedro);
+
+				    gameP.setPedro2(pedro);
+				}
+
+				if (rectangleName.equals("mlem")) {
+				    Body body = BodyHelperService.createBody(
+				        rectangle.getX() + rectangle.getWidth() / 2,
+				        rectangle.getY() + rectangle.getHeight() / 2,
+				        rectangle.getWidth(),
+				        rectangle.getHeight(),
+				        false,
+				        gameP.getWorld());
+
+				    Mlem mlem = new Mlem(rectangle.getWidth(), rectangle.getHeight(), body, rectangle.getX(), rectangle.getY());
+				    body.setUserData(mlem);
+
+				    gameP.setMlem(mlem);
+				}
 			}
 		}
 	}
@@ -97,9 +124,20 @@ public class TileMapHelper {
 		BodyDef bodyDef = new BodyDef();
 		bodyDef.type = BodyDef.BodyType.StaticBody;
 		Body body = gameP.getWorld().createBody(bodyDef);
+		
 		if("level2".equals(polyMapObject.getName())) {
 			body.setUserData("level2");
 		}
+		if("level1".equals(polyMapObject.getName())) {
+			body.setUserData("level1");
+		}
+		if("death".equals(polyMapObject.getName())) {
+			body.setUserData("death");
+		}
+		if("eWall".equals(polyMapObject.getName())) {
+			body.setUserData("eWall");
+		}
+		
 		Shape shape = createPolygonShape(polyMapObject);
 		body.createFixture(shape, 1000);
 		shape.dispose();

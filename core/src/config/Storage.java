@@ -22,7 +22,7 @@ public class Storage {
     public BitmapFont font;
     public static AssetManager assetManager = new AssetManager();
     private static boolean newLoad = true; 
-    private static int levelNum = 1;
+    private static int levelNum = 2;
     
     public static synchronized Storage getInstance()  {
         if (instance == null) {
@@ -71,6 +71,9 @@ public class Storage {
     	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_012.png", Texture.class);
     	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_013.png", Texture.class);
     	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_014.png", Texture.class);
+    	
+    	assetManager.load("enemies/Mlem/Walking.png", Texture.class);
+    	assetManager.load("enemies/Mlem/Dying.png", Texture.class);
 
     	assetManager.finishLoading();
 	}

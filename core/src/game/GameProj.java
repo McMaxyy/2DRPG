@@ -9,9 +9,6 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.utils.viewport.Viewport;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
@@ -19,12 +16,16 @@ import com.badlogic.gdx.physics.box2d.ContactListener;
 import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
 import config.GameScreen;
 import config.Storage;
+import managers.TileMapHelper;
+import objects.enemies.Mlem;
 import objects.enemies.Pedro;
 import objects.player.Player;
-import managers.TileMapHelper;
 
 public class GameProj implements Screen, ContactListener {
     private Viewport vp;
@@ -34,13 +35,13 @@ public class GameProj implements Screen, ContactListener {
     private final float TIME_STEP = 1/60f;
     private Storage storage;
     private SpriteBatch batch;
-    private SpriteBatch eBatch;
     private ShapeRenderer shapeRenderer;
     private OrthogonalTiledMapRenderer mapRenderer;
     private TileMapHelper mapHelper;
     private Box2DDebugRenderer box2DDebugRenderer;
     private Player player;
-    private Pedro pedro;
+    private Pedro pedro, pedro2;
+    private Mlem mlem;
     private GameScreen gameScreen;
     
     public GameProj(Viewport viewport, Game game, GameScreen gameScreen) {
@@ -52,7 +53,6 @@ public class GameProj implements Screen, ContactListener {
         storage = Storage.getInstance();
         storage.createFont();
         batch = new SpriteBatch();
-        eBatch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
         this.mapHelper = new TileMapHelper(this);
         this.mapRenderer = mapHelper.setupMap(Storage.getLevelNum());
@@ -93,17 +93,43 @@ public class GameProj implements Screen, ContactListener {
         mapRenderer.setView(camera);
         mapRenderer.render();
         player.update();
-        pedro.update();
+        if(pedro != null)
+        	pedro.update();
+        if(pedro2 != null)
+        	pedro2.update();
+        if(mlem != null)
+        	mlem.update();
+        
+        checkForBodyDestruction();
         
         batch.setProjectionMatrix(camera.combined);
-        eBatch.setProjectionMatrix(camera.combined);
         player.render(batch);
-        pedro.render(eBatch);
+        if(pedro != null)
+        	pedro.render(batch);
+        if(pedro2 != null)
+        	pedro2.render(batch);
+        if(mlem != null)
+        	mlem.render(batch);
         
         box2DDebugRenderer.render(world, camera.combined.scl(100.0f));
     }
 
-    @Override
+    private void checkForBodyDestruction() {
+    	if (pedro != null && pedro.shouldDestroy) {
+            world.destroyBody(pedro.getBody());
+            pedro = null; // Remove the Pedro reference
+        }
+        if (pedro2 != null && pedro2.shouldDestroy) {
+            world.destroyBody(pedro2.getBody());
+            pedro2 = null; // Remove the Pedro2 reference
+        }
+        if (mlem != null && mlem.shouldDestroy) {
+            world.destroyBody(mlem.getBody());
+            mlem = null; // Remove the Mlem reference
+        }
+	}
+
+	@Override
     public void resize(int width, int height) {
         vp.update(width, height);
     }
@@ -131,7 +157,6 @@ public class GameProj implements Screen, ContactListener {
     @Override
     public void dispose() {
         batch.dispose();
-        eBatch.dispose();
         shapeRenderer.dispose();
         mapRenderer.dispose();
         box2DDebugRenderer.dispose();
@@ -149,11 +174,22 @@ public class GameProj implements Screen, ContactListener {
 	public void setPedro(Pedro pedro) {
 		this.pedro = pedro;
 	}
+	
+	public void setPedro2(Pedro pedro) {
+		this.pedro2 = pedro;
+	}
+	
+	public void setMlem(Mlem mlem) {
+		this.mlem = mlem;
+	}
 
 	@Override
 	public void beginContact(Contact contact) {
 	    Fixture fixtureA = contact.getFixtureA();
 	    Fixture fixtureB = contact.getFixtureB();
+	    
+	    boolean isMlemA = fixtureA.getBody().getUserData() instanceof Mlem;
+	    boolean isMlemB = fixtureB.getBody().getUserData() instanceof Mlem;
 
 	    boolean isPedroA = fixtureA.getBody().getUserData() instanceof Pedro;
 	    boolean isPedroB = fixtureB.getBody().getUserData() instanceof Pedro;
@@ -164,9 +200,28 @@ public class GameProj implements Screen, ContactListener {
 	    boolean isLevel2A = "level2".equals(fixtureA.getBody().getUserData());
 	    boolean isLevel2B = "level2".equals(fixtureB.getBody().getUserData());
 	    
+	    boolean isLevel1A = "level1".equals(fixtureA.getBody().getUserData());
+	    boolean isLevel1B = "level1".equals(fixtureB.getBody().getUserData());
+	    
+	    boolean isDeathA = "death".equals(fixtureA.getBody().getUserData());
+	    boolean isDeathB = "death".equals(fixtureB.getBody().getUserData());
+	    
+	    boolean isEWallsA = "eWall".equals(fixtureA.getBody().getUserData());
+	    boolean isEWallsB = "eWall".equals(fixtureB.getBody().getUserData());
+	    
 	    if ((isPlayerA && isLevel2B) || (isPlayerB && isLevel2A)) {
 	        Storage.setLevelNum(2);
 	        gameScreen.switchToNewState(GameScreen.HOME);
+	    }
+	    
+	    if ((isPlayerA && isLevel1B) || (isPlayerB && isLevel1A)) {
+	        Storage.setLevelNum(1);
+	        gameScreen.switchToNewState(GameScreen.HOME);
+	    }
+	    
+	    if ((isPlayerA && isDeathB) || (isPlayerB && isDeathA)) {
+	        Player player = isPlayerA ? (Player) fixtureA.getBody().getUserData() : (Player) fixtureB.getBody().getUserData();
+	        player.die();
 	    }
 	    
 	    if ((isPedroA && fixtureB.isSensor()) || (isPedroB && fixtureA.isSensor())) {
@@ -174,13 +229,31 @@ public class GameProj implements Screen, ContactListener {
 	        pedro.die();
 	    }
 
-	    if (isPedroA && !isPlayerB) {
+	    if (isPedroA && !isPlayerB && isEWallsB) {
 	        ((Pedro) fixtureA.getBody().getUserData()).reverseDirection();
-	    } else if (isPedroB && !isPlayerA) {
+	    } else if (isPedroB && !isPlayerA && isEWallsA) {
 	        ((Pedro) fixtureB.getBody().getUserData()).reverseDirection();
 	    }
 	    
-	    if ((isPedroA && isPlayerB) || (isPedroB && isPlayerA) && !Pedro.pedroDeath) {
+	    if (((isPedroA && isPlayerB) || (isPedroB && isPlayerA))) {
+	        if ((pedro != null && !pedro.pedroDeath) || (pedro2 != null && !pedro2.pedroDeath)) {
+	            Player player = isPlayerA ? (Player) fixtureA.getBody().getUserData() : (Player) fixtureB.getBody().getUserData();
+            	player.die();
+	        }
+	    }
+	    
+	    if ((isMlemA && fixtureB.isSensor()) || (isMlemB && fixtureA.isSensor())) {
+	        Mlem mlem = isMlemA ? (Mlem) fixtureA.getBody().getUserData() : (Mlem) fixtureB.getBody().getUserData();
+	        mlem.die();
+	    }
+
+	    if (isMlemA && !isPlayerB && isEWallsB) {
+	        ((Mlem) fixtureA.getBody().getUserData()).reverseDirection();
+	    } else if (isMlemB && !isPlayerA && isEWallsA) {
+	        ((Mlem) fixtureB.getBody().getUserData()).reverseDirection();
+	    }
+	    
+	    if ((isMlemA && isPlayerB) || (isMlemB && isPlayerA) && !mlem.mlemDeath) {
 	        Player player = isPlayerA ? (Player) fixtureA.getBody().getUserData() : (Player) fixtureB.getBody().getUserData();
 	        player.die();
 	    }
@@ -194,8 +267,18 @@ public class GameProj implements Screen, ContactListener {
 
 	@Override
 	public void preSolve(Contact contact, Manifold oldManifold) {
-		// TODO Auto-generated method stub
-		
+	    Fixture fixtureA = contact.getFixtureA();
+	    Fixture fixtureB = contact.getFixtureB();
+	    
+	    boolean isPlayerA = fixtureA.getBody().getUserData() instanceof Player;
+	    boolean isPlayerB = fixtureB.getBody().getUserData() instanceof Player;
+	    
+	    boolean isEWallsA = "eWall".equals(fixtureA.getBody().getUserData());
+	    boolean isEWallsB = "eWall".equals(fixtureB.getBody().getUserData());
+	    
+	    if ((isPlayerA && isEWallsB) || (isPlayerB && isEWallsA)) {
+	        contact.setEnabled(false);
+	    }
 	}
 
 	@Override
