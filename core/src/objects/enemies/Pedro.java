@@ -20,6 +20,7 @@ public class Pedro extends GameEntity {
     private float deathTimer = 0f;
     private final float RESPAWN_DELAY = 2f;
     public boolean shouldDestroy = false;
+    private float deathX, deathY;
 
     public Pedro(float width, float height, Body body, float initialX, float initialY) {
         super(width, height, body);
@@ -59,24 +60,28 @@ public class Pedro extends GameEntity {
 
     @Override
     public void render(SpriteBatch batch) {
-    	if (shouldDestroy) 
-    		return;
-    	
-    	batch.begin();
-        batch.draw(animationManager.getPedroCurrentFrame(), 
+    	if (isDead) {
+            batch.begin();
+            batch.draw(animationManager.getPedroCurrentFrame(),
+                    deathX - width * 1f, deathY - height / 1.25f,
+                    width * 2f, height * 1.45f);
+            batch.end();
+        } else {
+            batch.begin();
+            batch.draw(animationManager.getPedroCurrentFrame(),
                     x - width * 1f, y - height / 1.25f,
                     width * 2f, height * 1.45f);
-        batch.end();
+            batch.end();
+        }
     }
     
     private void updateAnimationState() {
     	if (isDead()) {
-            if (getAnimationManager().isPedroAnimationFinished()) {
-            	shouldDestroy = true;
-//                deathTimer += Gdx.graphics.getDeltaTime();
-//                if (deathTimer >= RESPAWN_DELAY) {
-//                	checkRespawn();
-//                }             
+            if (getAnimationManager().isPedroAnimationFinished()) {           	
+                deathTimer += Gdx.graphics.getDeltaTime();
+                if (deathTimer >= RESPAWN_DELAY) {
+                	shouldDestroy = true;
+                }             
             }
             return;
         } else
@@ -104,6 +109,12 @@ public class Pedro extends GameEntity {
             colliding = false;
             getAnimationManager().setPedroState(AnimationManager.PedroState.DYING);
             body.setLinearVelocity(0, 0);
+            
+            deathX = x;
+            deathY = y;
+            for (Fixture fixture : body.getFixtureList()) {
+                fixture.setSensor(true);
+            }
         }
     }
     

@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.Fixture;
 
 import managers.AnimationManager;
 import objects.GameEntity;
@@ -18,6 +19,7 @@ public class Mlem extends GameEntity {
     private float deathTimer = 0f;
     public boolean shouldDestroy = false;
     private final float RESPAWN_DELAY = 2f;
+    private float deathX, deathY;
 
     public Mlem(float width, float height, Body body, float initialX, float initialY) {
         super(width, height, body);
@@ -27,7 +29,11 @@ public class Mlem extends GameEntity {
     }
 
     @Override
-    public void update() {    	
+    public void update() {
+    	if(shouldDestroy) {
+    		return;
+    	}
+    	
         x = body.getPosition().x * 100.0f;
         y = body.getPosition().y * 100.0f;
         
@@ -52,20 +58,28 @@ public class Mlem extends GameEntity {
 
     @Override
     public void render(SpriteBatch batch) {
-    	batch.begin();
-        batch.draw(animationManager.getMlemCurrentFrame(), 
-                    x - width * 1f, y - height / 1.9f,
-                    width * 2f, height * 1.2f);
-        batch.end();
+    	if (isDead) {
+    		batch.begin();
+            batch.draw(animationManager.getMlemCurrentFrame(), 
+                        deathX - width * 1f, deathY - height / 1.9f,
+                        width * 2f, height * 1.2f);
+            batch.end();
+        } else {
+        	batch.begin();
+            batch.draw(animationManager.getMlemCurrentFrame(), 
+                        x - width * 1f, y - height / 1.9f,
+                        width * 2f, height * 1.2f);
+            batch.end();
+        }
     }
     
     private void updateAnimationState() {
     	if (isDead()) {
             if (getAnimationManager().isMlemAnimationFinished()) {
-                deathTimer += Gdx.graphics.getDeltaTime();
+            	deathTimer += Gdx.graphics.getDeltaTime();
                 if (deathTimer >= RESPAWN_DELAY) {
-                	checkRespawn();
-                }             
+                	shouldDestroy = true;
+                }           
             }
             return;
         } else
@@ -92,6 +106,12 @@ public class Mlem extends GameEntity {
             mlemDeath = true;
             getAnimationManager().setMlemState(AnimationManager.MlemState.DYING);
             body.setLinearVelocity(0, 0);
+            
+            deathX = x;
+            deathY = y;
+            for (Fixture fixture : body.getFixtureList()) {
+                fixture.setSensor(true);
+            }
         }
     }
     

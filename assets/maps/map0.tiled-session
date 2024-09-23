@@ -5,7 +5,8 @@
     },
     "activeFile": "Map1.tmx",
     "expandedProjectPaths": [
-        "."
+        ".",
+        "tiles"
     ],
     "fileStates": {
         "C:/Users/Max/Documents/repos/2DRPG/level1.tmx": {
@@ -22,7 +23,6 @@
         "Map0.tmx": {
             "expandedObjectLayers": [
                 7,
-                9,
                 10
             ],
             "scale": 0.5,
@@ -39,11 +39,11 @@
                 8,
                 6
             ],
-            "scale": 0.33,
-            "selectedLayer": 5,
+            "scale": 0.25,
+            "selectedLayer": 4,
             "viewCenter": {
-                "x": 1206.060606060606,
-                "y": 1048.4848484848485
+                "x": 792,
+                "y": 944
             }
         },
         "tiles/IdkFloor.tsx": {
