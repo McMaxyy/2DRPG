@@ -77,7 +77,7 @@ public class Pedro extends GameEntity {
     
     private void updateAnimationState() {
     	if (isDead()) {
-            if (getAnimationManager().isPedroAnimationFinished()) {           	
+            if (getAnimationManager().isAnimationFinished("Pedro")) {           	
                 deathTimer += Gdx.graphics.getDeltaTime();
                 if (deathTimer >= RESPAWN_DELAY) {
                 	shouldDestroy = true;
@@ -85,11 +85,11 @@ public class Pedro extends GameEntity {
             }
             return;
         } else
-        	getAnimationManager().setPedroState(AnimationManager.PedroState.RUNNING);	
+        	getAnimationManager().setState(AnimationManager.State.RUNNING, "Pedro");	
     }
     
     public void checkRespawn() {
-        if (isDead && getAnimationManager().isPedroAnimationFinished()) {
+        if (isDead && getAnimationManager().isAnimationFinished("Pedro")) {
             respawn();
         }
     }
@@ -99,15 +99,14 @@ public class Pedro extends GameEntity {
         isDead = false;
         pedroDeath = false;
         deathTimer = 0f;       
-        getAnimationManager().setPedroState(AnimationManager.PedroState.RUNNING);		
+        getAnimationManager().setState(AnimationManager.State.RUNNING, "Pedro");		
 	}
 
 	public void die() {
 		if (!isDead) {
             isDead = true;
             pedroDeath = true;
-            colliding = false;
-            getAnimationManager().setPedroState(AnimationManager.PedroState.DYING);
+            getAnimationManager().setState(AnimationManager.State.DYING, "Pedro");
             body.setLinearVelocity(0, 0);
             
             deathX = x;

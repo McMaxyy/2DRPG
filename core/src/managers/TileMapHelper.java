@@ -14,10 +14,12 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.Shape;
 
+import config.Storage;
 import game.GameProj;
 import objects.enemies.Mlem;
-import objects.enemies.Pedro;
-import objects.player.Player;
+import objects.enemies.Peepee;
+import objects.player.PlayerMage;
+import objects.player.PlayerMelee;
 
 public class TileMapHelper {
 	private TiledMap map1, map2;
@@ -66,13 +68,23 @@ public class TileMapHelper {
 				        rectangle.getHeight(),
 				        false,
 				        gameP.getWorld());
-
-				    Player player = new Player(rectangle.getWidth(), rectangle.getHeight(), body, rectangle.getX(), rectangle.getY(), gameP.getWorld());
-				    body.setUserData(player);
-				    gameP.setPlayer(player);
+				    
+				    PlayerMelee playerMelee = null;
+				    PlayerMage playerMage = null;
+				    
+				    if(Storage.getPlayerChar() == 1) {
+					    playerMelee = new PlayerMelee(rectangle.getWidth(), rectangle.getHeight(), body, rectangle.getX(), rectangle.getY(), gameP.getWorld());
+					    body.setUserData(playerMelee);
+					    gameP.setPlayerMelee(playerMelee);
+				    }
+				    else {
+					    playerMage = new PlayerMage(rectangle.getWidth(), rectangle.getHeight(), body, rectangle.getX(), rectangle.getY(), gameP.getWorld());
+					    body.setUserData(playerMage);
+					    gameP.setPlayerMage(playerMage);
+				    }				    
 				}
 				
-				if (rectangleName.equals("pedro")) {
+				if (rectangleName.equals("peepee")) {
 				    Body body = BodyHelperService.createBody(
 				        rectangle.getX() + rectangle.getWidth() / 2,
 				        rectangle.getY() + rectangle.getHeight() / 2,
@@ -81,13 +93,13 @@ public class TileMapHelper {
 				        false,
 				        gameP.getWorld());
 
-				    Pedro pedro = new Pedro(rectangle.getWidth(), rectangle.getHeight(), body, rectangle.getX(), rectangle.getY());
-				    body.setUserData(pedro);
+				    Peepee peepee = new Peepee(rectangle.getWidth(), rectangle.getHeight(), body, rectangle.getX(), rectangle.getY());
+				    body.setUserData(peepee);
 
-				    gameP.setPedro(pedro);
+				    gameP.setPeepee(peepee);
 				}
 				
-				if (rectangleName.equals("pedro2")) {
+				if (rectangleName.equals("peepee2")) {
 				    Body body = BodyHelperService.createBody(
 				        rectangle.getX() + rectangle.getWidth() / 2,
 				        rectangle.getY() + rectangle.getHeight() / 2,
@@ -96,10 +108,40 @@ public class TileMapHelper {
 				        false,
 				        gameP.getWorld());
 
-				    Pedro pedro = new Pedro(rectangle.getWidth(), rectangle.getHeight(), body, rectangle.getX(), rectangle.getY());
-				    body.setUserData(pedro);
+				    Peepee peepee = new Peepee(rectangle.getWidth(), rectangle.getHeight(), body, rectangle.getX(), rectangle.getY());
+				    body.setUserData(peepee);
 
-				    gameP.setPedro2(pedro);
+				    gameP.setPeepee2(peepee);
+				}
+				
+				if (rectangleName.equals("peepee3")) {
+				    Body body = BodyHelperService.createBody(
+				        rectangle.getX() + rectangle.getWidth() / 2,
+				        rectangle.getY() + rectangle.getHeight() / 2,
+				        rectangle.getWidth(),
+				        rectangle.getHeight(),
+				        false,
+				        gameP.getWorld());
+
+				    Peepee peepee = new Peepee(rectangle.getWidth(), rectangle.getHeight(), body, rectangle.getX(), rectangle.getY());
+				    body.setUserData(peepee);
+
+				    gameP.setPeepee3(peepee);
+				}
+				
+				if (rectangleName.equals("peepee4")) {
+				    Body body = BodyHelperService.createBody(
+				        rectangle.getX() + rectangle.getWidth() / 2,
+				        rectangle.getY() + rectangle.getHeight() / 2,
+				        rectangle.getWidth(),
+				        rectangle.getHeight(),
+				        false,
+				        gameP.getWorld());
+
+				    Peepee peepee = new Peepee(rectangle.getWidth(), rectangle.getHeight(), body, rectangle.getX(), rectangle.getY());
+				    body.setUserData(peepee);
+
+				    gameP.setPeepee4(peepee);
 				}
 
 				if (rectangleName.equals("mlem")) {
@@ -115,6 +157,21 @@ public class TileMapHelper {
 				    body.setUserData(mlem);
 
 				    gameP.setMlem(mlem);
+				}
+				
+				if (rectangleName.equals("mlem2")) {
+				    Body body = BodyHelperService.createBody(
+				        rectangle.getX() + rectangle.getWidth() / 2,
+				        rectangle.getY() + rectangle.getHeight() / 2,
+				        rectangle.getWidth(),
+				        rectangle.getHeight(),
+				        false,
+				        gameP.getWorld());
+
+				    Mlem mlem = new Mlem(rectangle.getWidth(), rectangle.getHeight(), body, rectangle.getX(), rectangle.getY());
+				    body.setUserData(mlem);
+
+				    gameP.setMlem2(mlem);
 				}
 			}
 		}

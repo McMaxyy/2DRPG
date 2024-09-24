@@ -14,7 +14,7 @@ import managers.AnimationManager;
 import managers.AnimationManager.State;
 import objects.GameEntity;
 
-public class Player extends GameEntity {
+public class PlayerMelee extends GameEntity {
     private float initialX, initialY;
     private int jumpCounter;
     private AnimationManager animationManager;
@@ -24,7 +24,7 @@ public class Player extends GameEntity {
     private World world;
     private float swingAngle;
 
-    public Player(float width, float height, Body body, float initialX, float initialY, World world) {
+    public PlayerMelee(float width, float height, Body body, float initialX, float initialY, World world) {
         super(width, height, body);
         this.speed = 3f;
         this.jumpCounter = 0;
@@ -41,7 +41,7 @@ public class Player extends GameEntity {
         isDead = false;
         death = false;
         jumpCounter = 0;
-        getAnimationManager().setState(AnimationManager.State.IDLE);
+        getAnimationManager().setState(AnimationManager.State.IDLE, "PlayerMelee");
     }
 
     @Override
@@ -53,7 +53,7 @@ public class Player extends GameEntity {
         updateAnimationState();
         getAnimationManager().update(Gdx.graphics.getDeltaTime());
         
-        if (getAnimationManager().getState() == AnimationManager.State.ATTACKING) {
+        if (getAnimationManager().getState("PlayerMelee") == AnimationManager.State.ATTACKING) {
             rotateSword(Gdx.graphics.getDeltaTime());
         }
     }
@@ -85,7 +85,7 @@ public class Player extends GameEntity {
             }
 
             if (Gdx.input.isTouched(Input.Buttons.LEFT)) {
-                getAnimationManager().setState(State.ATTACKING);
+                getAnimationManager().setState(State.ATTACKING, "PlayerMelee");
                 createSword();  
             }
 
@@ -117,7 +117,7 @@ public class Player extends GameEntity {
         
         PolygonShape swordShape = new PolygonShape();
 
-        float swordOffsetX = getAnimationManager().isFacingRight() ? 0.3f : -0.3f;
+        float swordOffsetX = getAnimationManager().isFacingRight("PlayerMelee") ? 0.3f : -0.3f;
         swordShape.setAsBox(0.25f, 0.05f, new Vector2(swordOffsetX, 0), 0);
 
         FixtureDef fixtureDef = new FixtureDef();
@@ -128,15 +128,15 @@ public class Player extends GameEntity {
         swordBody.createFixture(fixtureDef);
         swordShape.dispose();
 
-        swingAngle = getAnimationManager().isFacingRight() ? 80f : -80f;
+        swingAngle = getAnimationManager().isFacingRight("PlayerMelee") ? 80f : -80f;
     }
 
     private void rotateSword(float deltaTime) {
         if (swordBody != null) {
             float rotationSpeed = 180f;
-            swingAngle += getAnimationManager().isFacingRight() ? -rotationSpeed * deltaTime : rotationSpeed * deltaTime;
+            swingAngle += getAnimationManager().isFacingRight("PlayerMelee") ? -rotationSpeed * deltaTime : rotationSpeed * deltaTime;
 
-            if (getAnimationManager().isFacingRight()) {
+            if (getAnimationManager().isFacingRight("PlayerMelee")) {
                 if (swingAngle >= -20) {
                     swordBody.setTransform(body.getPosition(), (float) Math.toRadians(swingAngle));
                 } else {
@@ -161,24 +161,24 @@ public class Player extends GameEntity {
 
     private void updateAnimationState() {
         if (isDead()) {
-            if (getAnimationManager().isAnimationFinished()) {
+            if (getAnimationManager().isAnimationFinished("PlayerMelee")) {
                 death = true;
             }
             return;
         }
 
-        if (getAnimationManager().getState() == AnimationManager.State.ATTACKING) {
-            if (getAnimationManager().isAnimationFinished()) {
-                getAnimationManager().setState(AnimationManager.State.IDLE);
+        if (getAnimationManager().getState("PlayerMelee") == AnimationManager.State.ATTACKING) {
+            if (getAnimationManager().isAnimationFinished("PlayerMelee")) {
+                getAnimationManager().setState(AnimationManager.State.IDLE, "PlayerMelee");
                 isRunning = false;
                 removeSword();
             }
         } else if (body.getLinearVelocity().y != 0) {
-            getAnimationManager().setState(AnimationManager.State.JUMPING);
+            getAnimationManager().setState(AnimationManager.State.JUMPING, "PlayerMelee");
         } else if (velX != 0) {
-            getAnimationManager().setState(AnimationManager.State.RUNNING);
+            getAnimationManager().setState(AnimationManager.State.RUNNING, "PlayerMelee");
         } else {
-            getAnimationManager().setState(AnimationManager.State.IDLE);
+            getAnimationManager().setState(AnimationManager.State.IDLE, "PlayerMelee");
             isRunning = false;
         }
     }
@@ -187,13 +187,13 @@ public class Player extends GameEntity {
     public void die() {
         if (!isDead) {
             isDead = true;
-            getAnimationManager().setState(AnimationManager.State.DYING);
+            getAnimationManager().setState(AnimationManager.State.DYING, "PlayerMelee");
             body.setLinearVelocity(0, 0);
         }
     }
     
     public void checkRespawn() {
-        if (isDead && getAnimationManager().isAnimationFinished()) {
+        if (isDead && getAnimationManager().isAnimationFinished("PlayerMelee")) {
             respawn();
         }
     }

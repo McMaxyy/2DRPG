@@ -24,8 +24,9 @@ import config.GameScreen;
 import config.Storage;
 import managers.TileMapHelper;
 import objects.enemies.Mlem;
-import objects.enemies.Pedro;
-import objects.player.Player;
+import objects.enemies.Peepee;
+import objects.player.PlayerMage;
+import objects.player.PlayerMelee;
 
 public class GameProj implements Screen, ContactListener {
     private Viewport vp;
@@ -39,9 +40,10 @@ public class GameProj implements Screen, ContactListener {
     private OrthogonalTiledMapRenderer mapRenderer;
     private TileMapHelper mapHelper;
     private Box2DDebugRenderer box2DDebugRenderer;
-    private Player player;
-    private Pedro pedro, pedro2;
-    private Mlem mlem;
+    private PlayerMelee playerMelee;
+    private PlayerMage playerMage;
+    private Mlem mlem, mlem2;
+    private Peepee peepee, peepee2, peepee3, peepee4;
     private GameScreen gameScreen;
     
     public GameProj(Viewport viewport, Game game, GameScreen gameScreen) {
@@ -65,8 +67,14 @@ public class GameProj implements Screen, ContactListener {
     
     private void cameraUpdate() {
 		Vector3 position = camera.position;
-    	position.x = Math.round(player.getBody().getPosition().x * 100.0f * 10) / 10f;
-    	position.y = Math.round(player.getBody().getPosition().y * 100.0f * 10) / 10f;
+		if(Storage.getPlayerChar() == 1) {
+			position.x = Math.round(playerMelee.getBody().getPosition().x * 100.0f * 10) / 10f;
+	    	position.y = Math.round(playerMelee.getBody().getPosition().y * 100.0f * 10) / 10f;
+	    }
+	    else {
+	    	position.x = Math.round(playerMage.getBody().getPosition().x * 100.0f * 10) / 10f;
+	    	position.y = Math.round(playerMage.getBody().getPosition().y * 100.0f * 10) / 10f;
+	    } 	
     	camera.position.set(position);
         camera.update();   	
     }
@@ -79,9 +87,12 @@ public class GameProj implements Screen, ContactListener {
 
     @Override
     public void render(float delta) {  
-    	if (Player.death) {
-    		player.checkRespawn(); 
-//            renderGameOver();
+    	if (PlayerMelee.death) {
+    		playerMelee.checkRespawn(); 
+            return;
+        }    	
+    	else if (PlayerMage.death) {
+    		playerMage.checkRespawn(); 
             return;
         }
     	
@@ -92,40 +103,71 @@ public class GameProj implements Screen, ContactListener {
         
         mapRenderer.setView(camera);
         mapRenderer.render();
-        player.update();
-        if(pedro != null)
-        	pedro.update();
-        if(pedro2 != null)
-        	pedro2.update();
+        
+        if(playerMelee != null)
+        	playerMelee.update();
+        if(playerMage != null)
+        	playerMage.update();
+        if(peepee != null)
+        	peepee.update();
+        if(peepee2 != null)
+        	peepee2.update();
+        if(peepee3 != null)
+        	peepee3.update();
+        if(peepee4 != null)
+        	peepee4.update();
         if(mlem != null)
         	mlem.update();
+        if(mlem2 != null)
+        	mlem2.update();
         
         checkForBodyDestruction();
         
-        batch.setProjectionMatrix(camera.combined);
-        player.render(batch);
-        if(pedro != null)
-        	pedro.render(batch);
-        if(pedro2 != null)
-        	pedro2.render(batch);
+        batch.setProjectionMatrix(camera.combined);       
+        if(peepee != null)
+        	peepee.render(batch);
+        if(peepee2 != null)
+        	peepee2.render(batch);
+        if(peepee3 != null)
+        	peepee3.render(batch);
+        if(peepee4 != null)
+        	peepee4.render(batch);
         if(mlem != null)
         	mlem.render(batch);
+        if(mlem2 != null)
+        	mlem2.render(batch);
+        if(playerMelee != null)
+        	playerMelee.render(batch);
+        if(playerMage != null)
+        	playerMage.render(batch);
         
-        box2DDebugRenderer.render(world, camera.combined.scl(100.0f));
+//        box2DDebugRenderer.render(world, camera.combined.scl(100.0f));
     }
 
     private void checkForBodyDestruction() {
-    	if (pedro != null && pedro.shouldDestroy) {
-            world.destroyBody(pedro.getBody());
-            pedro = null; // Remove the Pedro reference
+    	if (peepee != null && peepee.shouldDestroy) {
+            world.destroyBody(peepee.getBody());
+            peepee = null;
         }
-        if (pedro2 != null && pedro2.shouldDestroy) {
-            world.destroyBody(pedro2.getBody());
-            pedro2 = null; // Remove the Pedro2 reference
+        if (peepee2 != null && peepee2.shouldDestroy) {
+            world.destroyBody(peepee2.getBody());
+            peepee2 = null;
+        }
+        if (peepee3 != null && peepee3.shouldDestroy) {
+            world.destroyBody(peepee3.getBody());
+            peepee3 = null;
+        }
+        if (peepee4 != null && peepee4.shouldDestroy) {
+            world.destroyBody(peepee4.getBody());
+            peepee4 = null;
         }
         if (mlem != null && mlem.shouldDestroy) {
             world.destroyBody(mlem.getBody());
-            mlem = null; // Remove the Mlem reference
+            mlem = null;
+        }
+        if (mlem2 != null && mlem2.shouldDestroy) {
+            world.destroyBody(mlem2.getBody());
+            mlem2 = null;
         }
 	}
 
@@ -167,36 +209,59 @@ public class GameProj implements Screen, ContactListener {
 		return world;
 	}
 
-	public void setPlayer(Player player) {
-		this.player = player;
+	public void setPlayerMelee(PlayerMelee player) {
+		this.playerMelee = player;
 	}
 	
-	public void setPedro(Pedro pedro) {
-		this.pedro = pedro;
+	public void setPlayerMage(PlayerMage player) {
+		this.playerMage = player;
 	}
 	
-	public void setPedro2(Pedro pedro) {
-		this.pedro2 = pedro;
+	public void setPeepee(Peepee peepee) {
+		this.peepee = peepee;
+	}
+	
+	public void setPeepee2(Peepee peepee) {
+		this.peepee2 = peepee;
+	}
+	
+	public void setPeepee3(Peepee peepee) {
+		this.peepee3 = peepee;
+	}
+	
+	public void setPeepee4(Peepee peepee) {
+		this.peepee4 = peepee;
 	}
 	
 	public void setMlem(Mlem mlem) {
 		this.mlem = mlem;
+	}
+	
+	public void setMlem2(Mlem mlem) {
+		this.mlem2 = mlem;
 	}
 
 	@Override
 	public void beginContact(Contact contact) {
 	    Fixture fixtureA = contact.getFixtureA();
 	    Fixture fixtureB = contact.getFixtureB();
+	    boolean isPlayerA, isPlayerB;
 	    
 	    boolean isMlemA = fixtureA.getBody().getUserData() instanceof Mlem;
 	    boolean isMlemB = fixtureB.getBody().getUserData() instanceof Mlem;
 
-	    boolean isPedroA = fixtureA.getBody().getUserData() instanceof Pedro;
-	    boolean isPedroB = fixtureB.getBody().getUserData() instanceof Pedro;
+	    boolean isPeepeeA = fixtureA.getBody().getUserData() instanceof Peepee;
+	    boolean isPeepeeB = fixtureB.getBody().getUserData() instanceof Peepee;
 	    
-	    boolean isPlayerA = fixtureA.getBody().getUserData() instanceof Player;
-	    boolean isPlayerB = fixtureB.getBody().getUserData() instanceof Player;
-	    
+	    if(Storage.getPlayerChar() == 1) {
+	    	isPlayerA = fixtureA.getBody().getUserData() instanceof PlayerMelee;
+		    isPlayerB = fixtureB.getBody().getUserData() instanceof PlayerMelee;
+	    }
+	    else {
+	    	isPlayerA = fixtureA.getBody().getUserData() instanceof PlayerMage;
+		    isPlayerB = fixtureB.getBody().getUserData() instanceof PlayerMage;
+	    }
+	        
 	    boolean isLevel2A = "level2".equals(fixtureA.getBody().getUserData());
 	    boolean isLevel2B = "level2".equals(fixtureB.getBody().getUserData());
 	    
@@ -216,29 +281,46 @@ public class GameProj implements Screen, ContactListener {
 	    
 	    if ((isPlayerA && isLevel1B) || (isPlayerB && isLevel1A)) {
 	        Storage.setLevelNum(1);
-	        gameScreen.switchToNewState(GameScreen.HOME);
+	        gameScreen.switchToNewState(GameScreen.START);
 	    }
 	    
-	    if ((isPlayerA && isDeathB) || (isPlayerB && isDeathA)) {
-	        Player player = isPlayerA ? (Player) fixtureA.getBody().getUserData() : (Player) fixtureB.getBody().getUserData();
+	    if (((isPlayerA && isDeathB) || (isPlayerB && isDeathA)) && Storage.getPlayerChar() == 1) {
+	        PlayerMelee player = isPlayerA ? (PlayerMelee) fixtureA.getBody().getUserData() : (PlayerMelee) fixtureB.getBody().getUserData();
 	        player.die();
 	    }
+	    else if (((isPlayerA && isDeathB) || (isPlayerB && isDeathA)) && Storage.getPlayerChar() == 2) {
+	        PlayerMage player = isPlayerA ? (PlayerMage) fixtureA.getBody().getUserData() : (PlayerMage) fixtureB.getBody().getUserData();
+	        player.die();
+	    }	    
 	    
-	    if ((isPedroA && fixtureB.isSensor()) || (isPedroB && fixtureA.isSensor())) {
-	        Pedro pedro = isPedroA ? (Pedro) fixtureA.getBody().getUserData() : (Pedro) fixtureB.getBody().getUserData();
-	        pedro.die();
+	    if ((isPeepeeA && fixtureB.isSensor()) || (isPeepeeB && fixtureA.isSensor())) {
+	        Peepee peepee = isPeepeeA ? (Peepee) fixtureA.getBody().getUserData() : (Peepee) fixtureB.getBody().getUserData();
+	        peepee.die();
 	    }
 
-	    if (isPedroA && !isPlayerB && isEWallsB) {
-	        ((Pedro) fixtureA.getBody().getUserData()).reverseDirection();
-	    } else if (isPedroB && !isPlayerA && isEWallsA) {
-	        ((Pedro) fixtureB.getBody().getUserData()).reverseDirection();
+	    if (isPeepeeA && !isPlayerB && isEWallsB) {
+	        ((Peepee) fixtureA.getBody().getUserData()).reverseDirection();
+	    } else if (isPeepeeB && !isPlayerA && isEWallsA) {
+	        ((Peepee) fixtureB.getBody().getUserData()).reverseDirection();
 	    }
 	    
-	    if (((isPedroA && isPlayerB) || (isPedroB && isPlayerA))) {
-	        if ((pedro != null && !pedro.pedroDeath) || (pedro2 != null && !pedro2.pedroDeath)) {
-	            Player player = isPlayerA ? (Player) fixtureA.getBody().getUserData() : (Player) fixtureB.getBody().getUserData();
-            	player.die();
+	    if (((isPeepeeA && isPlayerB) || (isPeepeeB && isPlayerA)) && Storage.getPlayerChar() == 1) {
+	        if ((peepee != null && !peepee.peepeeDeath) || 
+	            (peepee2 != null && !peepee2.peepeeDeath) || 
+	            (peepee3 != null && !peepee3.peepeeDeath) || 
+	            (peepee4 != null && !peepee4.peepeeDeath)) {
+	            
+	            PlayerMelee player = isPlayerA ? (PlayerMelee) fixtureA.getBody().getUserData() : (PlayerMelee) fixtureB.getBody().getUserData();
+	            player.die();
+	        }
+	    } else if (((isPeepeeA && isPlayerB) || (isPeepeeB && isPlayerA)) && Storage.getPlayerChar() == 2) {
+	        if ((peepee != null && !peepee.peepeeDeath) || 
+	            (peepee2 != null && !peepee2.peepeeDeath) || 
+	            (peepee3 != null && !peepee3.peepeeDeath) || 
+	            (peepee4 != null && !peepee4.peepeeDeath)) {
+	            
+	            PlayerMage player = isPlayerA ? (PlayerMage) fixtureA.getBody().getUserData() : (PlayerMage) fixtureB.getBody().getUserData();
+	            player.die();
 	        }
 	    }
 	    
@@ -253,10 +335,18 @@ public class GameProj implements Screen, ContactListener {
 	        ((Mlem) fixtureB.getBody().getUserData()).reverseDirection();
 	    }
 	    
-	    if ((isMlemA && isPlayerB) || (isMlemB && isPlayerA) && !mlem.mlemDeath) {
-	        Player player = isPlayerA ? (Player) fixtureA.getBody().getUserData() : (Player) fixtureB.getBody().getUserData();
-	        player.die();
+	    if (((isMlemA && isPlayerB) || (isMlemB && isPlayerA)) && Storage.getPlayerChar() == 1) {
+	        if ((peepee != null && !mlem.mlemDeath) || (mlem2 != null && !mlem2.mlemDeath)) {
+	            PlayerMelee player = isPlayerA ? (PlayerMelee) fixtureA.getBody().getUserData() : (PlayerMelee) fixtureB.getBody().getUserData();
+            	player.die();
+	        }
 	    }
+	    else if (((isMlemA && isPlayerB) || (isMlemB && isPlayerA)) && Storage.getPlayerChar() == 2) {
+	        if ((peepee != null && !mlem.mlemDeath) || (mlem2 != null && !mlem2.mlemDeath)) {
+	            PlayerMage player = isPlayerA ? (PlayerMage) fixtureA.getBody().getUserData() : (PlayerMage) fixtureB.getBody().getUserData();
+            	player.die();
+	        }
+	    }	    
 	}
 	
 	@Override
@@ -269,9 +359,16 @@ public class GameProj implements Screen, ContactListener {
 	public void preSolve(Contact contact, Manifold oldManifold) {
 	    Fixture fixtureA = contact.getFixtureA();
 	    Fixture fixtureB = contact.getFixtureB();
+	    boolean isPlayerA, isPlayerB;
 	    
-	    boolean isPlayerA = fixtureA.getBody().getUserData() instanceof Player;
-	    boolean isPlayerB = fixtureB.getBody().getUserData() instanceof Player;
+	    if(Storage.getPlayerChar() == 1) {
+	    	isPlayerA = fixtureA.getBody().getUserData() instanceof PlayerMelee;
+		    isPlayerB = fixtureB.getBody().getUserData() instanceof PlayerMelee;
+	    }
+	    else {
+	    	isPlayerA = fixtureA.getBody().getUserData() instanceof PlayerMage;
+		    isPlayerB = fixtureB.getBody().getUserData() instanceof PlayerMage;
+	    }	    
 	    
 	    boolean isEWallsA = "eWall".equals(fixtureA.getBody().getUserData());
 	    boolean isEWallsB = "eWall".equals(fixtureB.getBody().getUserData());

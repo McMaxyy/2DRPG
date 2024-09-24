@@ -26,6 +26,7 @@ public class Mlem extends GameEntity {
         this.animationManager = new AnimationManager();
         this.initialX = initialX;
         this.initialY = initialY;
+        mlemDeath = false;
     }
 
     @Override
@@ -62,20 +63,20 @@ public class Mlem extends GameEntity {
     		batch.begin();
             batch.draw(animationManager.getMlemCurrentFrame(), 
                         deathX - width * 1f, deathY - height / 1.9f,
-                        width * 2f, height * 1.2f);
+                        width * 2f, height * 0.9f);
             batch.end();
         } else {
         	batch.begin();
             batch.draw(animationManager.getMlemCurrentFrame(), 
                         x - width * 1f, y - height / 1.9f,
-                        width * 2f, height * 1.2f);
+                        width * 2f, height * 0.8f);
             batch.end();
         }
     }
     
     private void updateAnimationState() {
     	if (isDead()) {
-            if (getAnimationManager().isMlemAnimationFinished()) {
+            if (getAnimationManager().isAnimationFinished("Mlem")) {
             	deathTimer += Gdx.graphics.getDeltaTime();
                 if (deathTimer >= RESPAWN_DELAY) {
                 	shouldDestroy = true;
@@ -83,11 +84,11 @@ public class Mlem extends GameEntity {
             }
             return;
         } else
-        	getAnimationManager().setMlemState(AnimationManager.MlemState.RUNNING);	
+        	getAnimationManager().setState(AnimationManager.State.RUNNING, "Mlem");	
     }
     
     public void checkRespawn() {
-        if (isDead && getAnimationManager().isMlemAnimationFinished()) {
+        if (isDead && getAnimationManager().isAnimationFinished("Mlem")) {
             respawn();
         }
     }
@@ -97,14 +98,14 @@ public class Mlem extends GameEntity {
         isDead = false;
         mlemDeath = false;
         deathTimer = 0f;       
-        getAnimationManager().setMlemState(AnimationManager.MlemState.RUNNING);		
+        getAnimationManager().setState(AnimationManager.State.RUNNING, "Mlem");		
 	}
 
 	public void die() {
 		if (!isDead) {
             isDead = true;
             mlemDeath = true;
-            getAnimationManager().setMlemState(AnimationManager.MlemState.DYING);
+            getAnimationManager().setState(AnimationManager.State.DYING, "Mlem");
             body.setLinearVelocity(0, 0);
             
             deathX = x;

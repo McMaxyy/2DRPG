@@ -22,9 +22,9 @@ public class Storage {
     public BitmapFont font;
     public static AssetManager assetManager = new AssetManager();
     private static boolean newLoad = true; 
-    private static int levelNum = 2;
-    
-    public static synchronized Storage getInstance()  {
+    private static int levelNum = 2, playerChar = 2;
+
+	public static synchronized Storage getInstance()  {
         if (instance == null) {
             instance = new Storage();
         }
@@ -37,43 +37,27 @@ public class Storage {
             newLoad = false;
             loadPlayerAssets();
             loadEnemyAssets();
+            loadEffects();
         }        
     }    
     
-    private static void loadEnemyAssets() {
-		// Wraith animations
-    	assetManager.load("enemies/Pedro/Walking/Wraith_02_Moving Forward_000.png", Texture.class);
-    	assetManager.load("enemies/Pedro/Walking/Wraith_02_Moving Forward_001.png", Texture.class);
-    	assetManager.load("enemies/Pedro/Walking/Wraith_02_Moving Forward_002.png", Texture.class);
-    	assetManager.load("enemies/Pedro/Walking/Wraith_02_Moving Forward_003.png", Texture.class);
-    	assetManager.load("enemies/Pedro/Walking/Wraith_02_Moving Forward_004.png", Texture.class);
-    	assetManager.load("enemies/Pedro/Walking/Wraith_02_Moving Forward_005.png", Texture.class);
-    	assetManager.load("enemies/Pedro/Walking/Wraith_02_Moving Forward_006.png", Texture.class);
-    	assetManager.load("enemies/Pedro/Walking/Wraith_02_Moving Forward_007.png", Texture.class);
-    	assetManager.load("enemies/Pedro/Walking/Wraith_02_Moving Forward_008.png", Texture.class);
-    	assetManager.load("enemies/Pedro/Walking/Wraith_02_Moving Forward_009.png", Texture.class);
-    	assetManager.load("enemies/Pedro/Walking/Wraith_02_Moving Forward_010.png", Texture.class);
-    	assetManager.load("enemies/Pedro/Walking/Wraith_02_Moving Forward_011.png", Texture.class);
-
-    	// Wraith dying
-    	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_000.png", Texture.class);
-    	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_001.png", Texture.class);
-    	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_002.png", Texture.class);
-    	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_003.png", Texture.class);
-    	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_004.png", Texture.class);
-    	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_005.png", Texture.class);
-    	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_006.png", Texture.class);
-    	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_007.png", Texture.class);
-    	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_008.png", Texture.class);
-    	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_009.png", Texture.class);
-    	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_010.png", Texture.class);
-    	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_011.png", Texture.class);
-    	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_012.png", Texture.class);
-    	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_013.png", Texture.class);
-    	assetManager.load("enemies/Pedro/Dying/Wraith_02_Dying_014.png", Texture.class);
+    private static void loadEffects() {
+    	assetManager.load("effects/Lightning.png", Texture.class);
     	
+    	assetManager.finishLoading();
+	}
+
+	private static void loadEnemyAssets() {
     	assetManager.load("enemies/Mlem/Walking.png", Texture.class);
     	assetManager.load("enemies/Mlem/Dying.png", Texture.class);
+    	
+    	assetManager.load("enemies/Pedro/Attacking.png", Texture.class);
+    	assetManager.load("enemies/Pedro/Idle.png", Texture.class);
+    	assetManager.load("enemies/Pedro/Walking.png", Texture.class);
+    	assetManager.load("enemies/Pedro/Dying.png", Texture.class);
+    	
+    	assetManager.load("enemies/Peepee/Walking.png", Texture.class);
+    	assetManager.load("enemies/Peepee/Dying.png", Texture.class);
 
     	assetManager.finishLoading();
 	}
@@ -189,5 +173,13 @@ public class Storage {
 
 	public static void setLevelNum(int levelNum) {
 		Storage.levelNum = levelNum;
+	}
+
+	public static int getPlayerChar() {
+		return playerChar;
+	}
+	
+	public static void setPlayerChar(int playerChar) {
+		Storage.playerChar = playerChar;
 	}
 }
