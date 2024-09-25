@@ -9,6 +9,8 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.physics.box2d.Body;
+import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.Contact;
 import com.badlogic.gdx.physics.box2d.ContactImpulse;
@@ -23,10 +25,13 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import config.GameScreen;
 import config.Storage;
 import managers.TileMapHelper;
+import objects.GameEntity;
 import objects.enemies.Mlem;
 import objects.enemies.Peepee;
 import objects.player.PlayerMage;
 import objects.player.PlayerMelee;
+import objects.spells.MeleeAttacks;
+import objects.spells.SpellAttacks;
 
 public class GameProj implements Screen, ContactListener {
     private Viewport vp;
@@ -105,21 +110,21 @@ public class GameProj implements Screen, ContactListener {
         mapRenderer.render();
         
         if(playerMelee != null)
-        	playerMelee.update();
+        	playerMelee.update(delta);
         if(playerMage != null)
-        	playerMage.update();
+        	playerMage.update(delta);
         if(peepee != null)
-        	peepee.update();
+        	peepee.update(delta);
         if(peepee2 != null)
-        	peepee2.update();
+        	peepee2.update(delta);
         if(peepee3 != null)
-        	peepee3.update();
+        	peepee3.update(delta);
         if(peepee4 != null)
-        	peepee4.update();
+        	peepee4.update(delta);
         if(mlem != null)
-        	mlem.update();
+        	mlem.update(delta);
         if(mlem2 != null)
-        	mlem2.update();
+        	mlem2.update(delta);
         
         checkForBodyDestruction();
         
@@ -141,7 +146,7 @@ public class GameProj implements Screen, ContactListener {
         if(playerMage != null)
         	playerMage.render(batch);
         
-//        box2DDebugRenderer.render(world, camera.combined.scl(100.0f));
+        box2DDebugRenderer.render(world, camera.combined.scl(100.0f));
     }
 
     private void checkForBodyDestruction() {
@@ -245,109 +250,138 @@ public class GameProj implements Screen, ContactListener {
 	public void beginContact(Contact contact) {
 	    Fixture fixtureA = contact.getFixtureA();
 	    Fixture fixtureB = contact.getFixtureB();
+	    
+	    Body bodyA = fixtureA.getBody();
+	    Body bodyB = fixtureB.getBody();
+	    
 	    boolean isPlayerA, isPlayerB;
 	    
-	    boolean isMlemA = fixtureA.getBody().getUserData() instanceof Mlem;
-	    boolean isMlemB = fixtureB.getBody().getUserData() instanceof Mlem;
+	    boolean isMlemA = bodyA.getUserData() instanceof Mlem;
+	    boolean isMlemB = bodyB.getUserData() instanceof Mlem;
 
-	    boolean isPeepeeA = fixtureA.getBody().getUserData() instanceof Peepee;
-	    boolean isPeepeeB = fixtureB.getBody().getUserData() instanceof Peepee;
+	    boolean isPeepeeA = bodyA.getUserData() instanceof Peepee;
+	    boolean isPeepeeB = bodyB.getUserData() instanceof Peepee;
 	    
-	    if(Storage.getPlayerChar() == 1) {
-	    	isPlayerA = fixtureA.getBody().getUserData() instanceof PlayerMelee;
-		    isPlayerB = fixtureB.getBody().getUserData() instanceof PlayerMelee;
+	    if (Storage.getPlayerChar() == 1) {
+	        isPlayerA = bodyA.getUserData() instanceof PlayerMelee;
+	        isPlayerB = bodyB.getUserData() instanceof PlayerMelee;
+	    } else {
+	        isPlayerA = bodyA.getUserData() instanceof PlayerMage;
+	        isPlayerB = bodyB.getUserData() instanceof PlayerMage;
 	    }
-	    else {
-	    	isPlayerA = fixtureA.getBody().getUserData() instanceof PlayerMage;
-		    isPlayerB = fixtureB.getBody().getUserData() instanceof PlayerMage;
-	    }
-	        
-	    boolean isLevel2A = "level2".equals(fixtureA.getBody().getUserData());
-	    boolean isLevel2B = "level2".equals(fixtureB.getBody().getUserData());
-	    
-	    boolean isLevel1A = "level1".equals(fixtureA.getBody().getUserData());
-	    boolean isLevel1B = "level1".equals(fixtureB.getBody().getUserData());
-	    
-	    boolean isDeathA = "death".equals(fixtureA.getBody().getUserData());
-	    boolean isDeathB = "death".equals(fixtureB.getBody().getUserData());
-	    
-	    boolean isEWallsA = "eWall".equals(fixtureA.getBody().getUserData());
-	    boolean isEWallsB = "eWall".equals(fixtureB.getBody().getUserData());
-	    
+
+	    boolean isLevel2A = "level2".equals(bodyA.getUserData());
+	    boolean isLevel2B = "level2".equals(bodyB.getUserData());
+
+	    boolean isLevel1A = "level1".equals(bodyA.getUserData());
+	    boolean isLevel1B = "level1".equals(bodyB.getUserData());
+
+	    boolean isDeathA = "death".equals(bodyA.getUserData());
+	    boolean isDeathB = "death".equals(bodyB.getUserData());
+
+	    boolean isEWallsA = "eWall".equals(bodyA.getUserData());
+	    boolean isEWallsB = "eWall".equals(bodyB.getUserData());
+
 	    if ((isPlayerA && isLevel2B) || (isPlayerB && isLevel2A)) {
 	        Storage.setLevelNum(2);
 	        gameScreen.switchToNewState(GameScreen.HOME);
 	    }
-	    
+
 	    if ((isPlayerA && isLevel1B) || (isPlayerB && isLevel1A)) {
 	        Storage.setLevelNum(1);
 	        gameScreen.switchToNewState(GameScreen.START);
 	    }
-	    
+
 	    if (((isPlayerA && isDeathB) || (isPlayerB && isDeathA)) && Storage.getPlayerChar() == 1) {
-	        PlayerMelee player = isPlayerA ? (PlayerMelee) fixtureA.getBody().getUserData() : (PlayerMelee) fixtureB.getBody().getUserData();
+	        PlayerMelee player = isPlayerA ? (PlayerMelee) bodyA.getUserData() : (PlayerMelee) bodyB.getUserData();
 	        player.die();
-	    }
-	    else if (((isPlayerA && isDeathB) || (isPlayerB && isDeathA)) && Storage.getPlayerChar() == 2) {
-	        PlayerMage player = isPlayerA ? (PlayerMage) fixtureA.getBody().getUserData() : (PlayerMage) fixtureB.getBody().getUserData();
+	    } else if (((isPlayerA && isDeathB) || (isPlayerB && isDeathA)) && Storage.getPlayerChar() == 2) {
+	        PlayerMage player = isPlayerA ? (PlayerMage) bodyA.getUserData() : (PlayerMage) bodyB.getUserData();
 	        player.die();
-	    }	    
-	    
-	    if ((isPeepeeA && fixtureB.isSensor()) || (isPeepeeB && fixtureA.isSensor())) {
-	        Peepee peepee = isPeepeeA ? (Peepee) fixtureA.getBody().getUserData() : (Peepee) fixtureB.getBody().getUserData();
-	        peepee.die();
 	    }
 
 	    if (isPeepeeA && !isPlayerB && isEWallsB) {
-	        ((Peepee) fixtureA.getBody().getUserData()).reverseDirection();
+	        ((Peepee) bodyA.getUserData()).reverseDirection();
 	    } else if (isPeepeeB && !isPlayerA && isEWallsA) {
-	        ((Peepee) fixtureB.getBody().getUserData()).reverseDirection();
+	        ((Peepee) bodyB.getUserData()).reverseDirection();
 	    }
-	    
+
 	    if (((isPeepeeA && isPlayerB) || (isPeepeeB && isPlayerA)) && Storage.getPlayerChar() == 1) {
-	        if ((peepee != null && !peepee.peepeeDeath) || 
-	            (peepee2 != null && !peepee2.peepeeDeath) || 
-	            (peepee3 != null && !peepee3.peepeeDeath) || 
-	            (peepee4 != null && !peepee4.peepeeDeath)) {
-	            
-	            PlayerMelee player = isPlayerA ? (PlayerMelee) fixtureA.getBody().getUserData() : (PlayerMelee) fixtureB.getBody().getUserData();
+	        if ((peepee != null && !peepee.death) ||
+	            (peepee2 != null && !peepee2.death) ||
+	            (peepee3 != null && !peepee3.death) ||
+	            (peepee4 != null && !peepee4.death)) {
+
+	            PlayerMelee player = isPlayerA ? (PlayerMelee) bodyA.getUserData() : (PlayerMelee) bodyB.getUserData();
 	            player.die();
 	        }
 	    } else if (((isPeepeeA && isPlayerB) || (isPeepeeB && isPlayerA)) && Storage.getPlayerChar() == 2) {
-	        if ((peepee != null && !peepee.peepeeDeath) || 
-	            (peepee2 != null && !peepee2.peepeeDeath) || 
-	            (peepee3 != null && !peepee3.peepeeDeath) || 
-	            (peepee4 != null && !peepee4.peepeeDeath)) {
-	            
-	            PlayerMage player = isPlayerA ? (PlayerMage) fixtureA.getBody().getUserData() : (PlayerMage) fixtureB.getBody().getUserData();
+	        if ((peepee != null && !peepee.death) ||
+	            (peepee2 != null && !peepee2.death) ||
+	            (peepee3 != null && !peepee3.death) ||
+	            (peepee4 != null && !peepee4.death)) {
+
+	            PlayerMage player = isPlayerA ? (PlayerMage) bodyA.getUserData() : (PlayerMage) bodyB.getUserData();
 	            player.die();
 	        }
 	    }
-	    
-	    if ((isMlemA && fixtureB.isSensor()) || (isMlemB && fixtureA.isSensor())) {
-	        Mlem mlem = isMlemA ? (Mlem) fixtureA.getBody().getUserData() : (Mlem) fixtureB.getBody().getUserData();
-	        mlem.die();
-	    }
 
 	    if (isMlemA && !isPlayerB && isEWallsB) {
-	        ((Mlem) fixtureA.getBody().getUserData()).reverseDirection();
+	        ((Mlem) bodyA.getUserData()).reverseDirection();
 	    } else if (isMlemB && !isPlayerA && isEWallsA) {
-	        ((Mlem) fixtureB.getBody().getUserData()).reverseDirection();
+	        ((Mlem) bodyB.getUserData()).reverseDirection();
 	    }
-	    
+
 	    if (((isMlemA && isPlayerB) || (isMlemB && isPlayerA)) && Storage.getPlayerChar() == 1) {
-	        if ((peepee != null && !mlem.mlemDeath) || (mlem2 != null && !mlem2.mlemDeath)) {
-	            PlayerMelee player = isPlayerA ? (PlayerMelee) fixtureA.getBody().getUserData() : (PlayerMelee) fixtureB.getBody().getUserData();
-            	player.die();
+	        if ((peepee != null && !mlem.death) || (mlem2 != null && !mlem2.death)) {
+	            PlayerMelee player = isPlayerA ? (PlayerMelee) bodyA.getUserData() : (PlayerMelee) bodyB.getUserData();
+	            player.die();
+	        }
+	    } else if (((isMlemA && isPlayerB) || (isMlemB && isPlayerA)) && Storage.getPlayerChar() == 2) {
+	        if ((peepee != null && !mlem.death) || (mlem2 != null && !mlem2.death)) {
+	            PlayerMage player = isPlayerA ? (PlayerMage) bodyA.getUserData() : (PlayerMage) bodyB.getUserData();
+	            player.die();
 	        }
 	    }
-	    else if (((isMlemA && isPlayerB) || (isMlemB && isPlayerA)) && Storage.getPlayerChar() == 2) {
-	        if ((peepee != null && !mlem.mlemDeath) || (mlem2 != null && !mlem2.mlemDeath)) {
-	            PlayerMage player = isPlayerA ? (PlayerMage) fixtureA.getBody().getUserData() : (PlayerMage) fixtureB.getBody().getUserData();
-            	player.die();
+
+	    boolean isSpellA = bodyA.getUserData() instanceof SpellAttacks;
+	    boolean isSpellB = bodyB.getUserData() instanceof SpellAttacks;
+	    
+	    boolean isWeaponA = bodyA.getUserData() instanceof MeleeAttacks;
+	    boolean isWeaponB = bodyB.getUserData() instanceof MeleeAttacks;
+
+	    boolean isEnemyA = bodyA.getType() == BodyDef.BodyType.DynamicBody;
+	    boolean isEnemyB = bodyB.getType() == BodyDef.BodyType.DynamicBody;
+
+	    if ((isSpellA && isEnemyB && !isPlayerB) || (isSpellB && isEnemyA && !isPlayerA)) {
+	        SpellAttacks spell = isSpellA ? (SpellAttacks) bodyA.getUserData() : (SpellAttacks) bodyB.getUserData();
+
+	        if (isEnemyA) {
+	            GameEntity enemy = (GameEntity) bodyA.getUserData();
+	            spell.dealDamage(enemy);
+	        } else if (isEnemyB) {
+	            GameEntity enemy = (GameEntity) bodyB.getUserData();
+	            spell.dealDamage(enemy);
 	        }
-	    }	    
+
+	        spell.markForRemoval();
+	    }
+
+	    if ((isWeaponA && isEnemyB && !isPlayerB) || (isWeaponB && isEnemyA && !isPlayerA)) {
+	    	MeleeAttacks weapon = isWeaponA ? (MeleeAttacks) bodyA.getUserData() : (MeleeAttacks) bodyB.getUserData();
+
+	        if (isEnemyA) {
+	            GameEntity enemy = (GameEntity) bodyA.getUserData();
+	            weapon.dealDamage(enemy);
+	            enemy.stopEntity();
+	        } else if (isEnemyB) {
+	            GameEntity enemy = (GameEntity) bodyB.getUserData();
+	            weapon.dealDamage(enemy);
+	            enemy.stopEntity();
+	        }
+	    }
 	}
+
 	
 	@Override
 	public void endContact(Contact contact) {

@@ -43,6 +43,7 @@ public class Storage {
     
     private static void loadEffects() {
     	assetManager.load("effects/Lightning.png", Texture.class);
+    	assetManager.load("effects/Fireball.png", Texture.class);
     	
     	assetManager.finishLoading();
 	}

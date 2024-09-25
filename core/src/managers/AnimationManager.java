@@ -20,6 +20,7 @@ public class AnimationManager {
     private Animation<TextureRegion> mlemRunningAnimation;
     private Animation<TextureRegion> mlemDyingAnimation;
     private Animation<TextureRegion> lightningAnimation;
+    private Animation<TextureRegion> fireballAnimation;
     private Animation<TextureRegion> peepeeRunningAnimation;
     private Animation<TextureRegion> peepeeDyingAnimation;
 
@@ -33,7 +34,7 @@ public class AnimationManager {
         IDLE, RUNNING, JUMPING, ATTACKING, DYING
     }
     public enum vfxState {
-    	NULL, LIGHTNING
+    	NULL, LIGHTNING, FIREBALL
     }
     private State currentState = State.IDLE;
     private State pedroCurrentState = State.RUNNING;
@@ -56,6 +57,15 @@ public class AnimationManager {
         	lightningFrame.add(lightningFrames[0][i]);
         }
         lightningAnimation = new Animation<>(0.05f, lightningFrame, Animation.PlayMode.NORMAL);
+        
+        Texture fireballTex = Storage.assetManager.get("effects/Fireball.png", Texture.class);
+    	fireballTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);           
+        TextureRegion[][] fireballFrames = TextureRegion.split(fireballTex, fireballTex.getWidth() / 8, fireballTex.getHeight());
+        Array<TextureRegion> fireballFrame = new Array<>();
+        for (int i = 0; i < 8; i++) {
+        	fireballFrame.add(fireballFrames[0][i]);
+        }
+        fireballAnimation = new Animation<>(0.1f, fireballFrame, Animation.PlayMode.NORMAL);
 	}
 
 	private void loadEnemyAnimations() {
@@ -423,6 +433,9 @@ public class AnimationManager {
             case LIGHTNING:
             	currentVfxAnimation = lightningAnimation;
                 break;
+            case FIREBALL:
+            	currentVfxAnimation = fireballAnimation;
+                break;
             default:
             	currentVfxAnimation = lightningAnimation;
                 break;
@@ -487,6 +500,8 @@ public class AnimationManager {
     		switch(vfxCurrentState) {
     		case LIGHTNING:
     			return lightningAnimation.isAnimationFinished(vfxAnimationTime);
+    		case FIREBALL:
+    			return fireballAnimation.isAnimationFinished(vfxAnimationTime);
 			default:
 				return false;
     		}

@@ -14,7 +14,7 @@ public class Pedro extends GameEntity {
     private float speed = 1.5f;
     private AnimationManager animationManager;
     private boolean isDead;
-    public boolean pedroDeath = false;
+    public boolean death = false;
     public boolean colliding = true;
     private float initialX, initialY;
     private float deathTimer = 0f;
@@ -27,11 +27,11 @@ public class Pedro extends GameEntity {
         this.animationManager = new AnimationManager();
         this.initialX = initialX;
         this.initialY = initialY;
-        pedroDeath = false;
+        death = false;
     }
 
     @Override
-    public void update() { 
+    public void update(float delta) { 
     	if(shouldDestroy) {
     		return;
     	}
@@ -39,7 +39,7 @@ public class Pedro extends GameEntity {
         x = body.getPosition().x * 100.0f;
         y = body.getPosition().y * 100.0f;
         
-        if(!pedroDeath) {
+        if(!death) {
         	if (movingLeft) {
                 body.setLinearVelocity(new Vector2(-speed, body.getLinearVelocity().y));
                 animationManager.setFacingRight(false, "Pedro");
@@ -47,6 +47,12 @@ public class Pedro extends GameEntity {
                 body.setLinearVelocity(new Vector2(speed, body.getLinearVelocity().y));
                 animationManager.setFacingRight(true, "Pedro");
             }
+        }
+        
+        updateStopTimer(delta);
+
+        if (isStopped() && !death) {
+            body.setLinearVelocity(velX * speed, velY * speed);
         }
                 
         updateAnimationState();
@@ -97,7 +103,7 @@ public class Pedro extends GameEntity {
     private void respawn() {
     	body.setTransform(initialX / 100f, initialY / 100f, 0);
         isDead = false;
-        pedroDeath = false;
+        death = false;
         deathTimer = 0f;       
         getAnimationManager().setState(AnimationManager.State.RUNNING, "Pedro");		
 	}
@@ -105,7 +111,7 @@ public class Pedro extends GameEntity {
 	public void die() {
 		if (!isDead) {
             isDead = true;
-            pedroDeath = true;
+            death = true;
             getAnimationManager().setState(AnimationManager.State.DYING, "Pedro");
             body.setLinearVelocity(0, 0);
             

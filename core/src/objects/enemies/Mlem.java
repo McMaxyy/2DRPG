@@ -14,7 +14,7 @@ public class Mlem extends GameEntity {
     private float speed = 1.2f;
     private AnimationManager animationManager;
     private boolean isDead;
-    public boolean mlemDeath = false;
+    public boolean death = false;
     private float initialX, initialY;
     private float deathTimer = 0f;
     public boolean shouldDestroy = false;
@@ -26,11 +26,17 @@ public class Mlem extends GameEntity {
         this.animationManager = new AnimationManager();
         this.initialX = initialX;
         this.initialY = initialY;
-        mlemDeath = false;
+        death = false;
+        setHealth(50, 50);
+    }
+    
+    @Override
+    public void onDeath() {
+    	die();
     }
 
     @Override
-    public void update() {
+    public void update(float delta) {
     	if(shouldDestroy) {
     		return;
     	}
@@ -38,7 +44,7 @@ public class Mlem extends GameEntity {
         x = body.getPosition().x * 100.0f;
         y = body.getPosition().y * 100.0f;
         
-        if(!mlemDeath) {
+        if(!death) {
         	if (movingLeft) {
                 body.setLinearVelocity(new Vector2(-speed, body.getLinearVelocity().y));
                 animationManager.setFacingRight(false, "Mlem");
@@ -46,6 +52,12 @@ public class Mlem extends GameEntity {
                 body.setLinearVelocity(new Vector2(speed, body.getLinearVelocity().y));
                 animationManager.setFacingRight(true, "Mlem");
             }
+        }
+        
+        updateStopTimer(delta);
+
+        if (isStopped() && !death) {
+            body.setLinearVelocity(velX * speed, velY * speed);
         }
                 
         updateAnimationState();
@@ -59,19 +71,20 @@ public class Mlem extends GameEntity {
 
     @Override
     public void render(SpriteBatch batch) {
+    	batch.begin();
+    	
     	if (isDead) {
-    		batch.begin();
             batch.draw(animationManager.getMlemCurrentFrame(), 
                         deathX - width * 1f, deathY - height / 1.9f,
                         width * 2f, height * 0.9f);
-            batch.end();
         } else {
-        	batch.begin();
             batch.draw(animationManager.getMlemCurrentFrame(), 
                         x - width * 1f, y - height / 1.9f,
                         width * 2f, height * 0.8f);
-            batch.end();
+            drawHealthBar(batch);
         }
+    	
+    	batch.end();
     }
     
     private void updateAnimationState() {
@@ -96,7 +109,7 @@ public class Mlem extends GameEntity {
     private void respawn() {
     	body.setTransform(initialX / 100f, initialY / 100f, 0);
         isDead = false;
-        mlemDeath = false;
+        death = false;
         deathTimer = 0f;       
         getAnimationManager().setState(AnimationManager.State.RUNNING, "Mlem");		
 	}
@@ -104,7 +117,7 @@ public class Mlem extends GameEntity {
 	public void die() {
 		if (!isDead) {
             isDead = true;
-            mlemDeath = true;
+            death = true;
             getAnimationManager().setState(AnimationManager.State.DYING, "Mlem");
             body.setLinearVelocity(0, 0);
             

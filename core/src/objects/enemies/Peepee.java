@@ -14,7 +14,7 @@ public class Peepee extends GameEntity {
     private float speed = 1.5f;
     private AnimationManager animationManager;
     private boolean isDead;
-    public boolean peepeeDeath = false;
+    public boolean death = false;
     public boolean colliding = true;
     private float initialX, initialY;
     private float deathTimer = 0f;
@@ -27,11 +27,17 @@ public class Peepee extends GameEntity {
         this.animationManager = new AnimationManager();
         this.initialX = initialX;
         this.initialY = initialY;
-        peepeeDeath = false;
+        death = false;
+        setHealth(50, 50);
+    }
+    
+    @Override
+    public void onDeath() {
+    	die();
     }
 
     @Override
-    public void update() { 
+    public void update(float delta) { 
     	if(shouldDestroy) {
     		return;
     	}
@@ -39,7 +45,7 @@ public class Peepee extends GameEntity {
         x = body.getPosition().x * 100.0f;
         y = body.getPosition().y * 100.0f;
         
-        if(!peepeeDeath) {
+        if(!death) {
         	if (movingLeft) {
                 body.setLinearVelocity(new Vector2(-speed, body.getLinearVelocity().y));
                 animationManager.setFacingRight(false, "Peepee");
@@ -47,6 +53,12 @@ public class Peepee extends GameEntity {
                 body.setLinearVelocity(new Vector2(speed, body.getLinearVelocity().y));
                 animationManager.setFacingRight(true, "Peepee");
             }
+        }
+        
+        updateStopTimer(delta);
+
+        if (isStopped() && !death) {
+            body.setLinearVelocity(velX * speed, velY * speed);
         }
                 
         updateAnimationState();
@@ -60,19 +72,21 @@ public class Peepee extends GameEntity {
 
     @Override
     public void render(SpriteBatch batch) {
-    	if (isDead) {
-            batch.begin();
+    	batch.begin();
+    	    	
+    	if (isDead) {          
             batch.draw(animationManager.getPeepeeCurrentFrame(),
                     deathX - width * 1f, deathY - height / 2f,
                     width * 2f, height * 1.3f);
-            batch.end();
+            
         } else {
-            batch.begin();
             batch.draw(animationManager.getPeepeeCurrentFrame(),
                     x - width * 1f, y - height / 2f,
                     width * 2f, height * 1.3f);
-            batch.end();
+            drawHealthBar(batch);
         }
+    	
+    	batch.end();
     }
     
     private void updateAnimationState() {
@@ -97,7 +111,7 @@ public class Peepee extends GameEntity {
     private void respawn() {
     	body.setTransform(initialX / 100f, initialY / 100f, 0);
         isDead = false;
-        peepeeDeath = false;
+        death = false;
         deathTimer = 0f;       
         getAnimationManager().setState(AnimationManager.State.RUNNING, "Peepee");		
 	}
@@ -105,7 +119,7 @@ public class Peepee extends GameEntity {
 	public void die() {
 		if (!isDead) {
             isDead = true;
-            peepeeDeath = true;
+            death = true;
             getAnimationManager().setState(AnimationManager.State.DYING, "Peepee");
             body.setLinearVelocity(0, 0);
             

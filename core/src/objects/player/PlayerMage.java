@@ -1,3 +1,5 @@
+// PlayerMage.java (refactored)
+
 package objects.player;
 
 import com.badlogic.gdx.Gdx;
@@ -7,9 +9,6 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
-import com.badlogic.gdx.physics.box2d.BodyDef.BodyType;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 
@@ -17,6 +16,7 @@ import managers.AnimationManager;
 import managers.AnimationManager.State;
 import managers.AnimationManager.vfxState;
 import objects.GameEntity;
+import objects.spells.SpellAttacks;
 
 public class PlayerMage extends GameEntity {
     private float initialX, initialY;
@@ -25,7 +25,7 @@ public class PlayerMage extends GameEntity {
     private boolean isRunning, isDead;
     public static boolean death = false;
     private World world;
-    private Body lightningBody;
+    private SpellAttacks spell;
 
     public PlayerMage(float width, float height, Body body, float initialX, float initialY, World world) {
         super(width, height, body);
@@ -35,56 +35,92 @@ public class PlayerMage extends GameEntity {
         this.initialX = initialX;
         this.initialY = initialY;
         this.world = world;
+        setHealth(100, 100);
+        setMana(50, 50);
     }
     
     public void respawn() {
+        if (spell != null) {
+            spell.removeSpell();
+        }
         body.setTransform(initialX / 100f, initialY / 100f, 0);
         isDead = false;
         death = false;
         jumpCounter = 0;
         getAnimationManager().setState(AnimationManager.State.IDLE, "Pedro");
     }
+    
+    @Override
+    protected void onDeath() {
+        die();        
+    }
 
     @Override
-    public void update() {
+    public void update(float delta) {
         x = body.getPosition().x * 100.0f;
         y = body.getPosition().y * 100.0f;
 
         checkUserInput();
         updateAnimationState();
         getAnimationManager().update(Gdx.graphics.getDeltaTime());
-        
-        if (getAnimationManager().isAnimationFinished("VFX")) {
-            removeLightning();
+
+        if (spell != null) {
+            spell.update(Gdx.graphics.getDeltaTime());
+
+            if (getAnimationManager().isAnimationFinished("VFX")) {
+                spell.removeSpell();
+                spell = null;
+            }
         }
     }
 
     @Override
     public void render(SpriteBatch batch) {
-    	if(!death) {
-    		batch.begin();
+        if (!death) {
+            batch.begin();
             batch.draw(getAnimationManager().getPedroCurrentFrame(), 
                         x - width * 1.25f, y - height / 1.4f,
                         width * 2.5f, height * 1.3f);
             
-            if (getAnimationManager().getState() == vfxState.LIGHTNING) {
+            drawHealthBar(batch);
+            drawManaBar(batch);
+            
+            if (getAnimationManager().getState() == vfxState.LIGHTNING && spell != null) {
                 TextureRegion lightningFrame = getAnimationManager().getVfxCurrentFrame();
-                if (lightningFrame != null && lightningBody != null) {
-                    float lightningX = lightningBody.getPosition().x * 100f;
-                    float lightningY = lightningBody.getPosition().y * 100f;
+                if (lightningFrame != null && spell.getBody() != null) {
+                    float lightningX = spell.getBody().getPosition().x * 100f;
+                    float lightningY = spell.getBody().getPosition().y * 100f;
                     batch.draw(lightningFrame, 
                                lightningX - 40f / 2, lightningY - 50f / 2, 
                                40f, 220f);
                 }
             }
             
+            if (getAnimationManager().getState() == vfxState.FIREBALL && spell != null) {
+                TextureRegion fireballFrame = getAnimationManager().getVfxCurrentFrame();
+                if (fireballFrame != null && spell.getBody() != null) {
+                    float fireballX = spell.getBody().getPosition().x * 100f;
+                    float fireballY = spell.getBody().getPosition().y * 100f;
+                    
+                    // Flip the fireball texture if the player is facing left
+                    boolean flipX = !spell.isFacingRight();
+                    if (fireballFrame.isFlipX() != flipX) {
+                        fireballFrame.flip(true, false);
+                    }
+
+                    batch.draw(fireballFrame, 
+                               fireballX - 45f, fireballY - 35f, 
+                               80f, 80f);
+                }
+            }
+            
             batch.end();
-    	}     
+        }     
     }
 
     private void checkUserInput() {
-    	if(!isDead) {
-    		velX = 0;
+        if (!isDead) {
+            velX = 0;
 
             if (Gdx.input.isKeyPressed(Input.Keys.D)) {
                 velX = 1;
@@ -96,10 +132,18 @@ public class PlayerMage extends GameEntity {
                 getAnimationManager().setFacingRight(false, "Pedro");
                 isRunning = true;
             }
+            
+            if (Gdx.input.justTouched() && Gdx.input.isButtonPressed(Input.Buttons.RIGHT) && spell == null && this.getMana() >= SpellAttacks.getSpellCost("Fireball")) {
+                getAnimationManager().setState(State.ATTACKING, "Pedro");
+                castFireball();   
+                this.loseMana(SpellAttacks.getSpellCost("Fireball"));
+                getAnimationManager().setState(vfxState.FIREBALL);
+            }
 
-            if (Gdx.input.justTouched() && Gdx.input.isButtonPressed(Input.Buttons.LEFT) && lightningBody == null) {
-                getAnimationManager().setState(State.ATTACKING, "Pedro");                
-                createLightning();
+            if (Gdx.input.justTouched() && Gdx.input.isButtonPressed(Input.Buttons.LEFT) && spell == null && this.getMana() >= SpellAttacks.getSpellCost("Lightning")) {
+                getAnimationManager().setState(State.ATTACKING, "Pedro");                           
+                castLightning();
+                this.loseMana(SpellAttacks.getSpellCost("Lightning"));
                 getAnimationManager().setState(vfxState.LIGHTNING);
             }
 
@@ -115,42 +159,28 @@ public class PlayerMage extends GameEntity {
             }
 
             body.setLinearVelocity(velX * speed, body.getLinearVelocity().y < 25 ? body.getLinearVelocity().y : 25);
-    	}      
+        }      
     }
     
-    private void createLightning() {
-        if (lightningBody != null) {
-            return;
-        }
+    private void castFireball() {
+        Vector2 targetPosition = body.getPosition();
+        spell = new SpellAttacks(SpellAttacks.SpellType.FIREBALL, world, body, targetPosition, getAnimationManager());
+    }
 
+    private void castLightning() {
         Body nearestEnemyBody = findNearestDynamicBodyInRange(5f);
-        Vector2 lightningPosition = body.getPosition();
+        Vector2 targetPosition = body.getPosition();
 
         if (nearestEnemyBody != null) {
-            lightningPosition = nearestEnemyBody.getPosition();
-            lightningPosition.add(0, -0.15f);
+            targetPosition = nearestEnemyBody.getPosition().cpy().add(0, -0.15f);
         } else {
             float lightningOffsetX = getAnimationManager().isFacingRight("Pedro") ? 0.5f : -0.5f;
-            lightningPosition.add(lightningOffsetX, -0.15f);
+            targetPosition.add(lightningOffsetX, -0.15f);
         }
 
-        BodyDef lightningBodyDef = new BodyDef();
-        lightningBodyDef.type = BodyDef.BodyType.KinematicBody;
-        lightningBodyDef.position.set(lightningPosition);
-
-        lightningBody = world.createBody(lightningBodyDef);
-        
-        PolygonShape lightningShape = new PolygonShape();
-        lightningShape.setAsBox(0.2f, 0.2f);
-
-        FixtureDef fixtureDef = new FixtureDef();
-        fixtureDef.shape = lightningShape;
-        fixtureDef.density = 1f;
-        fixtureDef.isSensor = true;
-
-        lightningBody.createFixture(fixtureDef);
-        lightningShape.dispose();
+        spell = new SpellAttacks(SpellAttacks.SpellType.LIGHTNING, world, body, targetPosition, getAnimationManager());
     }
+
 
     private Body findNearestDynamicBodyInRange(float range) {
         Array<Body> bodies = new Array<>();
@@ -164,12 +194,11 @@ public class PlayerMage extends GameEntity {
         float heightTolerance = playerHeight / 300f;
 
         for (Body body : bodies) {
-            if (body.getType() == BodyType.DynamicBody && body != this.body) {
+            if (body.getType() == BodyDef.BodyType.DynamicBody && body != this.body) {
                 Vector2 bodyPos = body.getPosition();
                 Vector2 playerPos = this.body.getPosition();
 
                 if (Math.abs(bodyPos.y - playerY) <= heightTolerance) {
-
                     float distanceSquared = playerPos.dst2(bodyPos);
 
                     if (distanceSquared <= nearestDistance) {
@@ -181,14 +210,6 @@ public class PlayerMage extends GameEntity {
         }
 
         return nearestBody;
-    }
-
-    private void removeLightning() {
-        if (lightningBody != null) {
-            world.destroyBody(lightningBody);
-            lightningBody = null;
-            getAnimationManager().setState(vfxState.NULL);
-        }
     }
 
     private void updateAnimationState() {
@@ -203,7 +224,10 @@ public class PlayerMage extends GameEntity {
             if (getAnimationManager().isAnimationFinished("Pedro")) {
                 getAnimationManager().setState(AnimationManager.State.IDLE, "Pedro");
                 isRunning = false;
-                removeLightning();
+                if (spell != null) {
+                    spell.removeSpell();
+                    spell = null;
+                }
             }
         } else if (body.getLinearVelocity().y != 0) {
             getAnimationManager().setState(AnimationManager.State.RUNNING, "Pedro");
@@ -215,26 +239,33 @@ public class PlayerMage extends GameEntity {
         }
     }
 
-
     public void die() {
         if (!isDead) {
             isDead = true;
             getAnimationManager().setState(AnimationManager.State.DYING, "Pedro");
             body.setLinearVelocity(0, 0);
+            
+            if (spell != null) {
+                spell.removeSpell();
+                spell = null;
+            }
+            
+            setHealth(100, 100);
+            setMana(50, 50);
         }
     }
-    
+
     public void checkRespawn() {
         if (isDead && getAnimationManager().isAnimationFinished("Pedro")) {
             respawn();
         }
     }
-    
+
     public boolean isDead() {
-    	return isDead;
+        return isDead;
     }
 
-	public AnimationManager getAnimationManager() {
-		return animationManager;
-	}
+    public AnimationManager getAnimationManager() {
+        return animationManager;
+    }
 }
