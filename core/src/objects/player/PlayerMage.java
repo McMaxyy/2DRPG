@@ -26,6 +26,7 @@ public class PlayerMage extends GameEntity {
     public static boolean death = false;
     private World world;
     private SpellAttacks spell;
+    private int mana = 50, maxMana = 50;
 
     public PlayerMage(float width, float height, Body body, float initialX, float initialY, World world) {
         super(width, height, body);
@@ -36,7 +37,7 @@ public class PlayerMage extends GameEntity {
         this.initialY = initialY;
         this.world = world;
         setHealth(100, 100);
-        setMana(50, 50);
+        setMana(mana, maxMana);
     }
     
     public void respawn() {
@@ -53,6 +54,10 @@ public class PlayerMage extends GameEntity {
     @Override
     protected void onDeath() {
         die();        
+    }
+    
+    public void resetMana() {
+    	setMana(mana, maxMana);
     }
 
     @Override

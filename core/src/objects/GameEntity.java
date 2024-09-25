@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.physics.box2d.Body;
 
 import config.Storage;
+import objects.player.PlayerMage;
 
 public abstract class GameEntity {
 	
@@ -60,11 +61,15 @@ public abstract class GameEntity {
     }
 
     protected void onDeath() {
-        
+    	
     }
     
     public int getMana() {
     	return mana;
+    }
+    
+    public int getMaxMana() {
+    	return maxMana;
     }
 
     public int getHealth() {

@@ -3,8 +3,9 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "Map1.tmx",
+    "activeFile": "MapVillage.tmx",
     "expandedProjectPaths": [
+        "villageTiles",
         "tiles",
         "."
     ],
@@ -26,33 +27,73 @@
                 10
             ],
             "scale": 0.5,
-            "selectedLayer": 5,
+            "selectedLayer": 4,
             "viewCenter": {
-                "x": 1028,
-                "y": 599
+                "x": 1024,
+                "y": 596
             }
         },
         "Map1.tmx": {
             "expandedObjectLayers": [
-                6,
                 8,
+                9,
                 7,
-                9
+                6
             ],
             "scale": 0.33,
             "selectedLayer": 4,
             "viewCenter": {
-                "x": 1472.7272727272725,
-                "y": 809.0909090909091
+                "x": 1221.212121212121,
+                "y": 860.6060606060605
+            }
+        },
+        "MapVillage.tmx": {
+            "expandedObjectLayers": [
+                7,
+                6,
+                5
+            ],
+            "scale": 0.5,
+            "selectedLayer": 3,
+            "viewCenter": {
+                "x": 914,
+                "y": 832
             }
         },
         "tiles/IdkFloor.tsx": {
             "dynamicWrapping": true,
             "scaleInDock": 1,
             "scaleInEditor": 1
+        },
+        "villageTiles/Buildings.tsx": {
+            "dynamicWrapping": true,
+            "scaleInDock": 0.0625,
+            "scaleInEditor": 0.125
+        },
+        "villageTiles/Environment.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "villageTiles/Floors.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
+        "villageTiles/Village.tsx": {
+            "scaleInDock": 0.125,
+            "scaleInEditor": 0.125
+        },
+        "villageTiles/VillageBG.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 0.5
+        },
+        "villageTiles/Village_environment_tiles_01.tsx": {
+            "dynamicWrapping": false,
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         }
     },
-    "last.imagePath": "C:/Users/Max/Documents/repos/2DRPG/assets/maps/tiles",
+    "last.imagePath": "C:/Users/Max/Documents/repos/2DRPG/assets/maps/villageTiles/Objects",
     "map.height": 25,
     "map.lastUsedFormat": "tmx",
     "map.tileHeight": 48,
@@ -61,7 +102,10 @@
     "openFiles": [
         "tiles/IdkFloor.tsx",
         "Map0.tmx",
-        "Map1.tmx"
+        "Map1.tmx",
+        "MapVillage.tmx",
+        "villageTiles/Buildings.tsx",
+        "villageTiles/Floors.tsx"
     ],
     "project": "map0.tiled-project",
     "property.type": "bool",
@@ -69,8 +113,20 @@
         "tiles/IdkFloor.tsx",
         "Map0.tmx",
         "Map1.tmx",
+        "villageTiles/Floors.tsx",
+        "villageTiles/Buildings.tsx",
+        "MapVillage.tmx",
+        "villageTiles/Village_environment_tiles_01.tsx",
+        "villageTiles/Environment.tsx",
+        "villageTiles/Village.tsx",
+        "villageTiles/VillageBG.tsx",
         "C:/Users/Max/Documents/repos/2DRPG/level1.tmx"
     ],
     "tileset.lastUsedFormat": "tsx",
+    "tileset.margin": 4,
+    "tileset.tileSize": {
+        "height": 48,
+        "width": 48
+    },
     "tileset.type": 1
 }

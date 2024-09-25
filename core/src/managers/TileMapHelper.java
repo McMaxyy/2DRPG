@@ -22,7 +22,7 @@ import objects.player.PlayerMage;
 import objects.player.PlayerMelee;
 
 public class TileMapHelper {
-	private TiledMap map1, map2;
+	private TiledMap map0, map1, map2;
 	private GameProj gameP;
 	private static final float PPM = 100.0f;
 	
@@ -32,6 +32,12 @@ public class TileMapHelper {
 	
 	public OrthogonalTiledMapRenderer setupMap(int mapNum) {
 		switch(mapNum) {
+		case 0:
+			map0 = new TmxMapLoader().load("maps/MapVillage.tmx");
+			parseMapObjects(map0.getLayers().get("CollisionLayer").getObjects());
+			parseMapObjects(map0.getLayers().get("Adventure").getObjects());
+			parseMapObjects(map0.getLayers().get("ChangeChar").getObjects());
+			return new OrthogonalTiledMapRenderer(map0);
 		case 1:
 			map1 = new TmxMapLoader().load("maps/Map0.tmx");
 			parseMapObjects(map1.getLayers().get("CollisionLayer").getObjects());
@@ -193,6 +199,12 @@ public class TileMapHelper {
 		}
 		if("eWall".equals(polyMapObject.getName())) {
 			body.setUserData("eWall");
+		}
+		if("changeChar".equals(polyMapObject.getName())) {
+			body.setUserData("changeChar");
+		}
+		if("adventure".equals(polyMapObject.getName())) {
+			body.setUserData("adventure");
 		}
 		
 		Shape shape = createPolygonShape(polyMapObject);

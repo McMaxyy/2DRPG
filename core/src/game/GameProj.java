@@ -1,7 +1,10 @@
 package game;
 
+import java.util.ArrayList;
+
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -19,6 +22,7 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.List;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
@@ -150,30 +154,41 @@ public class GameProj implements Screen, ContactListener {
     }
 
     private void checkForBodyDestruction() {
+    	boolean bodyDestroyed = false;   		
+    	
     	if (peepee != null && peepee.shouldDestroy) {
+    		bodyDestroyed = true;
             world.destroyBody(peepee.getBody());
-            peepee = null;
+            peepee = null;           
         }
         if (peepee2 != null && peepee2.shouldDestroy) {
+        	bodyDestroyed = true;
             world.destroyBody(peepee2.getBody());
             peepee2 = null;
         }
         if (peepee3 != null && peepee3.shouldDestroy) {
+        	bodyDestroyed = true;
             world.destroyBody(peepee3.getBody());
             peepee3 = null;
         }
         if (peepee4 != null && peepee4.shouldDestroy) {
+        	bodyDestroyed = true;
             world.destroyBody(peepee4.getBody());
             peepee4 = null;
         }
         if (mlem != null && mlem.shouldDestroy) {
+        	bodyDestroyed = true;
             world.destroyBody(mlem.getBody());
             mlem = null;
         }
         if (mlem2 != null && mlem2.shouldDestroy) {
+        	bodyDestroyed = true;
             world.destroyBody(mlem2.getBody());
             mlem2 = null;
         }
+        
+        if(bodyDestroyed && this.playerMage != null)
+        	this.playerMage.resetMana();
 	}
 
 	@Override
@@ -288,8 +303,8 @@ public class GameProj implements Screen, ContactListener {
 	    }
 
 	    if ((isPlayerA && isLevel1B) || (isPlayerB && isLevel1A)) {
-	        Storage.setLevelNum(1);
-	        gameScreen.switchToNewState(GameScreen.START);
+	        Storage.setLevelNum(0);
+	        gameScreen.switchToNewState(GameScreen.HOME);
 	    }
 
 	    if (((isPlayerA && isDeathB) || (isPlayerB && isDeathA)) && Storage.getPlayerChar() == 1) {
@@ -361,7 +376,7 @@ public class GameProj implements Screen, ContactListener {
 	            spell.dealDamage(enemy);
 	        } else if (isEnemyB) {
 	            GameEntity enemy = (GameEntity) bodyB.getUserData();
-	            spell.dealDamage(enemy);
+	            spell.dealDamage(enemy);	
 	        }
 
 	        spell.markForRemoval();
@@ -381,7 +396,6 @@ public class GameProj implements Screen, ContactListener {
 	        }
 	    }
 	}
-
 	
 	@Override
 	public void endContact(Contact contact) {
@@ -407,8 +421,38 @@ public class GameProj implements Screen, ContactListener {
 	    boolean isEWallsA = "eWall".equals(fixtureA.getBody().getUserData());
 	    boolean isEWallsB = "eWall".equals(fixtureB.getBody().getUserData());
 	    
-	    if ((isPlayerA && isEWallsB) || (isPlayerB && isEWallsA)) {
+	    boolean isAdventureA = "adventure".equals(fixtureA.getBody().getUserData());
+	    boolean isAdventureB = "adventure".equals(fixtureB.getBody().getUserData());
+	    
+	    boolean isChangeCharA = "changeChar".equals(fixtureA.getBody().getUserData());
+	    boolean isChangeCharB = "changeChar".equals(fixtureB.getBody().getUserData());
+	    
+	    if ((isPlayerA && isEWallsB) || (isPlayerB && isEWallsA) ||
+	    		(isPlayerA && isAdventureB) || (isPlayerB && isAdventureA) ||
+	    		(isPlayerA && isChangeCharB) || (isPlayerB && isChangeCharA)) {
 	        contact.setEnabled(false);
+	    }
+	    
+	    if ((isPlayerA && isAdventureB) || (isPlayerB && isAdventureA)) {
+	    	if(Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+	    		contact.setEnabled(true);
+	    		Storage.setLevelNum(1);
+		        gameScreen.switchToNewState(GameScreen.HOME);
+	    	}	    		
+	    }
+	    
+	    if ((isPlayerA && isChangeCharB) || (isPlayerB && isChangeCharA)) {
+	    	if(Gdx.input.isKeyJustPressed(Input.Keys.E)) {
+	    		contact.setEnabled(true);
+	    		if(Storage.getPlayerChar() == 1) {
+	    			Storage.setPlayerChar(2);
+	    			gameScreen.switchToNewState(GameScreen.HOME);
+	    		}
+	    		else {
+	    			Storage.setPlayerChar(1);
+	    			gameScreen.switchToNewState(GameScreen.HOME);
+	    		}
+	    	}	    		
 	    }
 	}
 

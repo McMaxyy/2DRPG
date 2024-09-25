@@ -3,8 +3,8 @@ package managers;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
-import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
+import com.badlogic.gdx.physics.box2d.World;
 
 public class BodyHelperService {
 
@@ -21,6 +21,7 @@ public class BodyHelperService {
 		FixtureDef fixtureDef = new FixtureDef();
 		fixtureDef.shape = shape;
 		fixtureDef.friction = 0;
+		body.setSleepingAllowed(false);
 		body.createFixture(fixtureDef);
 		shape.dispose();
 		return body;
