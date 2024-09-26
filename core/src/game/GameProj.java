@@ -1,7 +1,5 @@
 package game;
 
-import java.util.ArrayList;
-
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -22,7 +20,6 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.List;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
@@ -83,9 +80,11 @@ public class GameProj implements Screen, ContactListener {
 	    else {
 	    	position.x = Math.round(playerMage.getBody().getPosition().x * 100.0f * 10) / 10f;
 	    	position.y = Math.round(playerMage.getBody().getPosition().y * 100.0f * 10) / 10f;
-	    } 	
-    	camera.position.set(position);
-        camera.update();   	
+	    } 
+		
+		camera.zoom = 0.9f;
+    	camera.position.set(position);   	
+        camera.update(); 
     }
     
     private void renderGameOver() {
@@ -95,7 +94,7 @@ public class GameProj implements Screen, ContactListener {
 
 
     @Override
-    public void render(float delta) {  
+    public void render(float delta) { 
     	if (PlayerMelee.death) {
     		playerMelee.checkRespawn(); 
             return;
@@ -104,14 +103,14 @@ public class GameProj implements Screen, ContactListener {
     		playerMage.checkRespawn(); 
             return;
         }
-    	
+
         ScreenUtils.clear(0.2f, 0.2f, 0.2f, 1);
         cameraUpdate();
         
-        world.step(TIME_STEP, 6, 2);   
+        world.step(TIME_STEP, 6, 2);                
         
         mapRenderer.setView(camera);
-        mapRenderer.render();
+        mapRenderer.render();       
         
         if(playerMelee != null)
         	playerMelee.update(delta);
@@ -260,6 +259,10 @@ public class GameProj implements Screen, ContactListener {
 	public void setMlem2(Mlem mlem) {
 		this.mlem2 = mlem;
 	}
+	
+	public SpriteBatch getBatch() {
+		return batch;
+	}
 
 	@Override
 	public void beginContact(Contact contact) {
@@ -296,6 +299,9 @@ public class GameProj implements Screen, ContactListener {
 
 	    boolean isEWallsA = "eWall".equals(bodyA.getUserData());
 	    boolean isEWallsB = "eWall".equals(bodyB.getUserData());
+	    
+	    boolean isEnemyA = bodyA.getUserData() instanceof GameEntity && bodyA.getType() == BodyDef.BodyType.DynamicBody;
+	    boolean isEnemyB = bodyB.getUserData() instanceof GameEntity && bodyB.getType() == BodyDef.BodyType.DynamicBody;
 
 	    if ((isPlayerA && isLevel2B) || (isPlayerB && isLevel2A)) {
 	        Storage.setLevelNum(2);
@@ -328,7 +334,8 @@ public class GameProj implements Screen, ContactListener {
 	            (peepee4 != null && !peepee4.death)) {
 
 	            PlayerMelee player = isPlayerA ? (PlayerMelee) bodyA.getUserData() : (PlayerMelee) bodyB.getUserData();
-	            player.die();
+	            if(!player.isInvulnerable())
+	            	player.die();
 	        }
 	    } else if (((isPeepeeA && isPlayerB) || (isPeepeeB && isPlayerA)) && Storage.getPlayerChar() == 2) {
 	        if ((peepee != null && !peepee.death) ||
@@ -350,7 +357,8 @@ public class GameProj implements Screen, ContactListener {
 	    if (((isMlemA && isPlayerB) || (isMlemB && isPlayerA)) && Storage.getPlayerChar() == 1) {
 	        if ((peepee != null && !mlem.death) || (mlem2 != null && !mlem2.death)) {
 	            PlayerMelee player = isPlayerA ? (PlayerMelee) bodyA.getUserData() : (PlayerMelee) bodyB.getUserData();
-	            player.die();
+	            if(!player.isInvulnerable())
+	            	player.die();
 	        }
 	    } else if (((isMlemA && isPlayerB) || (isMlemB && isPlayerA)) && Storage.getPlayerChar() == 2) {
 	        if ((peepee != null && !mlem.death) || (mlem2 != null && !mlem2.death)) {
@@ -364,9 +372,6 @@ public class GameProj implements Screen, ContactListener {
 	    
 	    boolean isWeaponA = bodyA.getUserData() instanceof MeleeAttacks;
 	    boolean isWeaponB = bodyB.getUserData() instanceof MeleeAttacks;
-
-	    boolean isEnemyA = bodyA.getType() == BodyDef.BodyType.DynamicBody;
-	    boolean isEnemyB = bodyB.getType() == BodyDef.BodyType.DynamicBody;
 
 	    if ((isSpellA && isEnemyB && !isPlayerB) || (isSpellB && isEnemyA && !isPlayerA)) {
 	        SpellAttacks spell = isSpellA ? (SpellAttacks) bodyA.getUserData() : (SpellAttacks) bodyB.getUserData();
@@ -407,6 +412,7 @@ public class GameProj implements Screen, ContactListener {
 	public void preSolve(Contact contact, Manifold oldManifold) {
 	    Fixture fixtureA = contact.getFixtureA();
 	    Fixture fixtureB = contact.getFixtureB();
+	    
 	    boolean isPlayerA, isPlayerB;
 	    
 	    if(Storage.getPlayerChar() == 1) {
@@ -426,7 +432,7 @@ public class GameProj implements Screen, ContactListener {
 	    
 	    boolean isChangeCharA = "changeChar".equals(fixtureA.getBody().getUserData());
 	    boolean isChangeCharB = "changeChar".equals(fixtureB.getBody().getUserData());
-	    
+	    	 	    
 	    if ((isPlayerA && isEWallsB) || (isPlayerB && isEWallsA) ||
 	    		(isPlayerA && isAdventureB) || (isPlayerB && isAdventureA) ||
 	    		(isPlayerA && isChangeCharB) || (isPlayerB && isChangeCharA)) {

@@ -6,6 +6,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;
 
+import config.Storage;
 import managers.AnimationManager;
 import objects.GameEntity;
 
@@ -21,12 +22,14 @@ public class Peepee extends GameEntity {
     private final float RESPAWN_DELAY = 2f;
     public boolean shouldDestroy = false;
     private float deathX, deathY;
+    private Storage storage;
 
     public Peepee(float width, float height, Body body, float initialX, float initialY) {
         super(width, height, body);
         this.animationManager = new AnimationManager();
         this.initialX = initialX;
         this.initialY = initialY;
+        this.storage = Storage.getInstance();
         death = false;
         setHealth(50, 50);
     }

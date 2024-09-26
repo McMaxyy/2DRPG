@@ -6,26 +6,84 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.Timer;
 
 import objects.AttackEntity;
+import objects.player.PlayerMelee;
 
 public class MeleeAttacks extends AttackEntity {
     public enum WeaponType {
-        SWORD
+        SWORD, CHARGE
     }
 
     private WeaponType type;
-    private Body weaponBody;
+    private Body weaponBody, dashBody;
     private World world;
     private float swingAngle;
     private boolean facingRight;
+    private float dashSpeed = 20f;
+    private PlayerMelee player;
     
-    public MeleeAttacks(WeaponType type, World world, Body playerBody, boolean facingRight) {
-    	super(40);
+    public MeleeAttacks(WeaponType type, World world, Body playerBody, boolean facingRight, PlayerMelee player) {
+    	super(type == WeaponType.SWORD ? 40 : 10);
     	this.type = type;
         this.world = world;
         this.facingRight = facingRight;
-        createWeapon(playerBody);
+        this.player = player;
+        if(type == WeaponType.SWORD)
+        	createWeapon(playerBody);
+        else
+        	createDash(playerBody);
+    }
+    
+    public void createDash(Body playerBody) {
+        Vector2 dashVelocity = new Vector2(facingRight ? dashSpeed : -dashSpeed, playerBody.getLinearVelocity().y);
+        playerBody.setLinearVelocity(dashVelocity);
+
+        BodyDef dashBodyDef = new BodyDef();
+        dashBodyDef.type = BodyDef.BodyType.KinematicBody;
+        
+        float offset = 0.3f; 
+        dashBodyDef.position.set(playerBody.getPosition().x + (facingRight ? offset : -offset), playerBody.getPosition().y);
+
+        dashBody = world.createBody(dashBodyDef);
+
+        PolygonShape dashShape = new PolygonShape();
+        float dashWidth = 0.3f;
+        float dashHeight = 0.3f;
+        dashShape.setAsBox(dashWidth, dashHeight);
+
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.shape = dashShape;
+        fixtureDef.isSensor = true;
+        fixtureDef.density = 1f;
+
+        dashBody.createFixture(fixtureDef);
+        dashShape.dispose();
+
+        dashBody.setUserData(this);
+
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                if (dashBody != null && world != null) {
+                    world.destroyBody(dashBody);
+                    dashBody = null;
+                }
+            }
+        }, 0.15f);
+
+        Timer.schedule(new Timer.Task() {
+            @Override
+            public void run() {
+                if (dashBody != null && playerBody != null) {
+                    Vector2 playerPosition = playerBody.getPosition();
+                    dashBody.setTransform(new Vector2(
+                        playerPosition.x + (facingRight ? offset : -offset),
+                        playerPosition.y), dashBody.getAngle());
+                }
+            }
+        }, 0, 1 / 60f); 
     }
 
     public void createWeapon(Body playerBody) {

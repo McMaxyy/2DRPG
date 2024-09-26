@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <tileset version="1.10" tiledversion="1.10.1" name="Buildings" tilewidth="1024" tileheight="1024" tilecount="210" columns="0">
  <grid orientation="orthogonal" width="1" height="1"/>
- <tile id="274">
+ <tile id="274" x="50" y="0" width="156" height="256">
   <image width="256" height="256" source="Objects/building6_color1.png"/>
  </tile>
  <tile id="275">
@@ -256,7 +256,7 @@
  <tile id="358">
   <image width="512" height="512" source="Objects/building18_color1.png"/>
  </tile>
- <tile id="359">
+ <tile id="359" x="140" y="0" width="332" height="512">
   <image width="512" height="512" source="Objects/building18_color2.png"/>
  </tile>
  <tile id="360">

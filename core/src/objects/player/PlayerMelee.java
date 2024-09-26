@@ -20,8 +20,12 @@ public class PlayerMelee extends GameEntity {
     private AnimationManager animationManager;
     private boolean isRunning, isDead;
     public static boolean death = false;
-    private MeleeAttacks weapon;
+    private MeleeAttacks attack, weapon;
     private World world;
+    private boolean invulnerable = false;
+    private boolean isDashing = false;
+    private float dashTime = 0f;
+    private float maxDashTime = 0.15f; 
 
     public PlayerMelee(float width, float height, Body body, float initialX, float initialY, World world) {
         super(width, height, body);
@@ -43,7 +47,7 @@ public class PlayerMelee extends GameEntity {
     
     public void respawn() {
         if (weapon != null) {
-            weapon.removeWeapon();
+        	weapon.removeWeapon();
         }
         body.setTransform(initialX / 100f, initialY / 100f, 0);
         isDead = false;
@@ -62,7 +66,7 @@ public class PlayerMelee extends GameEntity {
         getAnimationManager().update(Gdx.graphics.getDeltaTime());
 
         if (getAnimationManager().getState("PlayerMelee") == AnimationManager.State.ATTACKING && weapon != null) {
-            weapon.rotateWeapon(Gdx.graphics.getDeltaTime(), body);
+        	weapon.rotateWeapon(Gdx.graphics.getDeltaTime(), body);
         }
     }
 
@@ -94,9 +98,22 @@ public class PlayerMelee extends GameEntity {
                 isRunning = true;
             }
 
-            if (Gdx.input.isTouched(Input.Buttons.LEFT)) {
+            if (Gdx.input.justTouched() && Gdx.input.isButtonPressed(Input.Buttons.LEFT)) {
                 getAnimationManager().setState(State.ATTACKING, "PlayerMelee");
                 createWeapon();  
+            }
+            
+            if (Gdx.input.justTouched() && Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) {
+                if (!isDashing) {
+                    createDash();
+                }
+            }
+
+            if (isDashing) {
+                dashTime += Gdx.graphics.getDeltaTime();
+                if (dashTime >= maxDashTime) {
+                    stopDash();
+                }
             }
 
             if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) && jumpCounter < 2) {
@@ -110,14 +127,33 @@ public class PlayerMelee extends GameEntity {
                 jumpCounter = 0;
             }
 
-            body.setLinearVelocity(velX * speed, body.getLinearVelocity().y < 25 ? body.getLinearVelocity().y : 25);
+            if (!isDashing) {
+                body.setLinearVelocity(velX * speed, body.getLinearVelocity().y < 25 ? body.getLinearVelocity().y : 25);
+            }        
         }
     }
 
     private void createWeapon() {
         if (weapon == null) {
-            weapon = new MeleeAttacks(MeleeAttacks.WeaponType.SWORD, world, body, getAnimationManager().isFacingRight("PlayerMelee"));
+        	weapon = new MeleeAttacks(MeleeAttacks.WeaponType.SWORD, world, body, getAnimationManager().isFacingRight("PlayerMelee"), this);
         }
+    }
+    
+    private void createDash() {
+        if (attack == null) {
+        	setInvulnerable(true);
+            attack = new MeleeAttacks(MeleeAttacks.WeaponType.CHARGE, world, body, getAnimationManager().isFacingRight("PlayerMelee"), this);
+            isDashing = true;
+            dashTime = 0;
+        }
+    }
+
+    private void stopDash() {
+        isDashing = false;
+        dashTime = 0; 
+        attack = null;
+        body.setLinearVelocity(0, body.getLinearVelocity().y); 
+        setInvulnerable(false);
     }
 
     private void updateAnimationState() {
@@ -133,8 +169,8 @@ public class PlayerMelee extends GameEntity {
                 getAnimationManager().setState(AnimationManager.State.IDLE, "PlayerMelee");
                 isRunning = false;
                 if (weapon != null) {
-                    weapon.removeWeapon();
-                    weapon = null;
+                	weapon.removeWeapon();
+                	weapon = null;
                 }
             }
         } else if (body.getLinearVelocity().y != 0) {
@@ -168,4 +204,12 @@ public class PlayerMelee extends GameEntity {
     public AnimationManager getAnimationManager() {
         return animationManager;
     }
+
+	public boolean isInvulnerable() {
+		return invulnerable;
+	}
+
+	public void setInvulnerable(boolean invulnerable) {
+		this.invulnerable = invulnerable;
+	}
 }
