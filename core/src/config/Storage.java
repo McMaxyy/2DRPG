@@ -63,7 +63,15 @@ public class Storage {
     	assetManager.finishLoading();
 	}
 
-	public static void loadPlayerAssets() {   	
+	public static void loadPlayerAssets() {   
+		// Archer
+    	assetManager.load("character/Archer/Running.png", Texture.class);
+    	assetManager.load("character/Archer/Dying.png", Texture.class);
+    	assetManager.load("character/Archer/Attacking.png", Texture.class);
+    	assetManager.load("character/Archer/Jumping.png", Texture.class);
+    	assetManager.load("character/Archer/Idle.png", Texture.class);
+    	assetManager.load("character/Archer/Arrow.png", Texture.class);
+		
         // Walking animation
         assetManager.load("character/Walking/Minotaur_01_Walking_000.png", Texture.class);
         assetManager.load("character/Walking/Minotaur_01_Walking_001.png", Texture.class);

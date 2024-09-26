@@ -23,13 +23,19 @@ public class AnimationManager {
     private Animation<TextureRegion> fireballAnimation;
     private Animation<TextureRegion> peepeeRunningAnimation;
     private Animation<TextureRegion> peepeeDyingAnimation;
+    private Animation<TextureRegion> archerIdleAnimation;
+    private Animation<TextureRegion> archerRunningAnimation;
+    private Animation<TextureRegion> archerJumpingAnimation;
+    private Animation<TextureRegion> archerAttackingAnimation;
+    private Animation<TextureRegion> archerDyingAnimation;
 
     private float animationTime = 0f;
     private float pedroAnimationTime = 0f;
     private float peepeeAnimationTime = 0f;
     private float mlemAnimationTime = 0f;
     private float vfxAnimationTime = 0f;
-    private boolean facingRight, pedroFacingRight, mlemFacingRight, peepeeFacingRight;   
+    private float archerAnimationTime = 0f;
+    private boolean facingRight, pedroFacingRight, mlemFacingRight, peepeeFacingRight, archerFacingRight;   
     public enum State {
         IDLE, RUNNING, JUMPING, ATTACKING, DYING
     }
@@ -40,6 +46,7 @@ public class AnimationManager {
     private State pedroCurrentState = State.RUNNING;
     private State mlemCurrentState = State.RUNNING;
     private State peepeeCurrentState = State.RUNNING;
+    private State arhcerCurrentState = State.IDLE;
     private vfxState vfxCurrentState = vfxState.NULL;
 
     public AnimationManager() {
@@ -157,6 +164,56 @@ public class AnimationManager {
 
 	private void loadPlayerAnimations() {
         try {
+        	// Archer running
+        	Texture archerRunningTex = Storage.assetManager.get("character/Archer/Running.png", Texture.class);
+    		archerRunningTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);           
+            TextureRegion[][] archerRunningFrames = TextureRegion.split(archerRunningTex, archerRunningTex.getWidth() / 12, archerRunningTex.getHeight());
+            Array<TextureRegion> archerRunningFrame = new Array<>();
+            for (int i = 0; i < 12; i++) {
+            	archerRunningFrame.add(archerRunningFrames[0][i]);
+            }
+            archerRunningAnimation = new Animation<>(0.06f, archerRunningFrame, Animation.PlayMode.LOOP);
+        	
+            // Archer idle
+            Texture archerIdleTex = Storage.assetManager.get("character/Archer/Idle.png", Texture.class);
+    		archerIdleTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);           
+            TextureRegion[][] archerIdleFrames = TextureRegion.split(archerIdleTex, archerIdleTex.getWidth() / 18, archerIdleTex.getHeight());
+            Array<TextureRegion> archerIdleFrame = new Array<>();
+            for (int i = 0; i < 18; i++) {
+            	archerIdleFrame.add(archerIdleFrames[0][i]);
+            }
+            archerIdleAnimation = new Animation<>(0.05f, archerIdleFrame, Animation.PlayMode.LOOP);
+            
+            // Archer dying
+            Texture archerDyingTex = Storage.assetManager.get("character/Archer/Dying.png", Texture.class);
+    		archerDyingTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);           
+            TextureRegion[][] archerDyingFrames = TextureRegion.split(archerDyingTex, archerDyingTex.getWidth() / 15, archerDyingTex.getHeight());
+            Array<TextureRegion> archerDyingFrame = new Array<>();
+            for (int i = 0; i < 15; i++) {
+            	archerDyingFrame.add(archerDyingFrames[0][i]);
+            }
+            archerDyingAnimation = new Animation<>(0.06f, archerDyingFrame, Animation.PlayMode.NORMAL);
+            
+            // Archer attacking
+            Texture archerAttackingTex = Storage.assetManager.get("character/Archer/Attacking.png", Texture.class);
+    		archerAttackingTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);           
+            TextureRegion[][] archerAttackingFrames = TextureRegion.split(archerAttackingTex, archerAttackingTex.getWidth() / 9, archerAttackingTex.getHeight());
+            Array<TextureRegion> archerAttackingFrame = new Array<>();
+            for (int i = 0; i < 9; i++) {
+            	archerAttackingFrame.add(archerAttackingFrames[0][i]);
+            }
+            archerAttackingAnimation = new Animation<>(0.05f, archerAttackingFrame, Animation.PlayMode.NORMAL);
+            
+            // Archer jumping
+            Texture archerJumpingTex = Storage.assetManager.get("character/Archer/Jumping.png", Texture.class);
+    		archerJumpingTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);           
+            TextureRegion[][] archerJumpingFrames = TextureRegion.split(archerJumpingTex, archerJumpingTex.getWidth() / 6, archerJumpingTex.getHeight());
+            Array<TextureRegion> archerJumpingFrame = new Array<>();
+            for (int i = 0; i < 6; i++) {
+            	archerJumpingFrame.add(archerJumpingFrames[0][i]);
+            }
+            archerJumpingAnimation = new Animation<>(0.075f, archerJumpingFrame, Animation.PlayMode.LOOP);
+            
             // Idle
             Array<TextureRegion> idleFrames = new Array<>();
             for (int i = 0; i < 12; i++) {
