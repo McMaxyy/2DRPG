@@ -16,7 +16,7 @@ import managers.AnimationManager;
 import managers.AnimationManager.State;
 import managers.AnimationManager.vfxState;
 import objects.GameEntity;
-import objects.spells.SpellAttacks;
+import objects.attacks.SpellAttacks;
 
 public class PlayerMage extends GameEntity {
     private float initialX, initialY;

@@ -5,7 +5,6 @@ import com.badlogic.gdx.maps.MapObjects;
 import com.badlogic.gdx.maps.objects.PolygonMapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Rectangle;
@@ -19,6 +18,7 @@ import config.Storage;
 import game.GameProj;
 import objects.enemies.Mlem;
 import objects.enemies.Peepee;
+import objects.player.PlayerArcher;
 import objects.player.PlayerMage;
 import objects.player.PlayerMelee;
 
@@ -78,17 +78,23 @@ public class TileMapHelper {
 				    
 				    PlayerMelee playerMelee = null;
 				    PlayerMage playerMage = null;
+				    PlayerArcher playerArcher = null;
 				    
 				    if(Storage.getPlayerChar() == 1) {
 					    playerMelee = new PlayerMelee(rectangle.getWidth(), rectangle.getHeight(), body, rectangle.getX(), rectangle.getY(), gameP.getWorld());
 					    body.setUserData(playerMelee);
 					    gameP.setPlayerMelee(playerMelee);
 				    }
-				    else {
+				    else if(Storage.getPlayerChar() == 2){
 					    playerMage = new PlayerMage(rectangle.getWidth(), rectangle.getHeight(), body, rectangle.getX(), rectangle.getY(), gameP.getWorld());
 					    body.setUserData(playerMage);
 					    gameP.setPlayerMage(playerMage);
-				    }				    
+				    }	
+				    else if(Storage.getPlayerChar() == 3){
+				    	playerArcher = new PlayerArcher(rectangle.getWidth(), rectangle.getHeight(), body, rectangle.getX(), rectangle.getY(), gameP.getWorld());
+					    body.setUserData(playerArcher);
+					    gameP.setPlayerArcher(playerArcher);
+				    }	
 				}
 				
 				if (rectangleName.equals("peepee")) {

@@ -1,4 +1,4 @@
-package objects.spells;
+package objects.attacks;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.*;
@@ -76,7 +76,6 @@ public class SpellAttacks extends AttackEntity{
         spellBody.createFixture(fixtureDef);
         fireballShape.dispose();
 
-        // Set velocity of the fireball based on player’s facing direction
         float fireballSpeed = 10f;
         velocity = new Vector2(facingRight ? fireballSpeed : -fireballSpeed, 0);
         spellBody.setLinearVelocity(velocity);
@@ -117,7 +116,6 @@ public class SpellAttacks extends AttackEntity{
         if (spellBody != null && type == SpellType.FIREBALL) {
             distanceTraveled += velocity.len() * deltaTime;
 
-            // Check if the fireball has exceeded its max distance
             if (distanceTraveled >= maxDistance || isMarkedForRemoval) {
                 removeSpell();
             }

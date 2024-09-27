@@ -1,9 +1,8 @@
-// PlayerMage.java (refactored)
-
 package objects.player;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
@@ -12,20 +11,24 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 
+import config.Storage;
 import managers.AnimationManager;
 import managers.AnimationManager.State;
-import managers.AnimationManager.vfxState;
 import objects.GameEntity;
-import objects.spells.SpellAttacks;
+import objects.attacks.ArcherAttacks;
+import objects.attacks.SpellAttacks;
 
 public class PlayerArcher extends GameEntity {
     private float initialX, initialY;
     private int jumpCounter;
     private AnimationManager animationManager;
-    private boolean isRunning, isDead;
+    private boolean isRunning, isDead, isShooting, canShoot = true;
     public static boolean death = false;
     private World world;
-    private SpellAttacks spell;
+    private ArcherAttacks arrow;
+    private int mana = 50, maxMana = 50;
+    private final float ARROW_DELAY = 0.2f;
+    private float arrowDelayTimer = 0f;
 
     public PlayerArcher(float width, float height, Body body, float initialX, float initialY, World world) {
         super(width, height, body);
@@ -35,22 +38,28 @@ public class PlayerArcher extends GameEntity {
         this.initialX = initialX;
         this.initialY = initialY;
         this.world = world;
-        setHealth(100, 100);    }
+        setHealth(100, 100);   
+        setMana(mana, maxMana);
+    }
     
     public void respawn() {
-        if (spell != null) {
-            spell.removeSpell();
+    	if (arrow != null) {
+    		arrow.removeArrow();
         }
         body.setTransform(initialX / 100f, initialY / 100f, 0);
         isDead = false;
         death = false;
         jumpCounter = 0;
-        getAnimationManager().setState(AnimationManager.State.IDLE, "Pedro");
+        getAnimationManager().setState(AnimationManager.State.IDLE, "PlayerArcher");
     }
     
     @Override
     protected void onDeath() {
         die();        
+    }
+    
+    public void resetMana() {
+    	setMana(mana, maxMana);
     }
 
     @Override
@@ -61,57 +70,52 @@ public class PlayerArcher extends GameEntity {
         checkUserInput();
         updateAnimationState();
         getAnimationManager().update(Gdx.graphics.getDeltaTime());
-
-        if (spell != null) {
-            spell.update(Gdx.graphics.getDeltaTime());
-
-            if (getAnimationManager().isAnimationFinished("VFX")) {
-                spell.removeSpell();
-                spell = null;
-            }
+        
+        if (arrow != null) {
+        	arrow.update(Gdx.graphics.getDeltaTime());
+        	
+        	if(arrow.getBody() == null)
+        		arrow = null;
         }
+        
+        if(isShooting) {
+        	delayShot();
+        }
+        
+        if(getAnimationManager().isAnimationFinished("PlayerArcher"))
+        	canShoot = true;
     }
 
     @Override
     public void render(SpriteBatch batch) {
         if (!death) {
             batch.begin();
-            batch.draw(getAnimationManager().getPedroCurrentFrame(), 
-                        x - width * 1.25f, y - height / 1.4f,
-                        width * 2.5f, height * 1.3f);
+            batch.draw(getAnimationManager().getArcherCurrentFrame(), 
+                        x - width * 1.2f, y - height / 1.3f,
+                        width * 2.3f, height * 1.5f);
             
             drawHealthBar(batch);
             drawManaBar(batch);
             
-            if (getAnimationManager().getState() == vfxState.LIGHTNING && spell != null) {
-                TextureRegion lightningFrame = getAnimationManager().getVfxCurrentFrame();
-                if (lightningFrame != null && spell.getBody() != null) {
-                    float lightningX = spell.getBody().getPosition().x * 100f;
-                    float lightningY = spell.getBody().getPosition().y * 100f;
-                    batch.draw(lightningFrame, 
-                               lightningX - 40f / 2, lightningY - 50f / 2, 
-                               40f, 220f);
-                }
-            }
-            
-            if (getAnimationManager().getState() == vfxState.FIREBALL && spell != null) {
-                TextureRegion fireballFrame = getAnimationManager().getVfxCurrentFrame();
-                if (fireballFrame != null && spell.getBody() != null) {
-                    float fireballX = spell.getBody().getPosition().x * 100f;
-                    float fireballY = spell.getBody().getPosition().y * 100f;
+            if (arrow != null) {
+                Texture arrowTex = Storage.assetManager.get("character/Archer/Arrow.png");
+                
+                if (arrowTex != null && arrow.getBody() != null) {
+                    TextureRegion arrowRegion = new TextureRegion(arrowTex);
                     
-                    // Flip the fireball texture if the player is facing left
-                    boolean flipX = !spell.isFacingRight();
-                    if (fireballFrame.isFlipX() != flipX) {
-                        fireballFrame.flip(true, false);
+                    float arrowX = arrow.getBody().getPosition().x * 100f;
+                    float arrowY = arrow.getBody().getPosition().y * 100f;
+                    
+                    boolean flipX = !arrow.isFacingRight();
+                    
+                    if (arrowRegion.isFlipX() != flipX) {
+                        arrowRegion.flip(true, false);
                     }
 
-                    batch.draw(fireballFrame, 
-                               fireballX - 45f, fireballY - 35f, 
-                               80f, 80f);
+                    batch.draw(arrowRegion, arrowX - 45f, arrowY - 25f, 20f, 20f);
                 }
             }
-            
+                    
             batch.end();
         }     
     }
@@ -122,27 +126,23 @@ public class PlayerArcher extends GameEntity {
 
             if (Gdx.input.isKeyPressed(Input.Keys.D)) {
                 velX = 1;
-                getAnimationManager().setFacingRight(true, "Pedro");
+                getAnimationManager().setFacingRight(true, "PlayerArcher");
                 isRunning = true;
             }
             if (Gdx.input.isKeyPressed(Input.Keys.A)) {
                 velX = -1;
-                getAnimationManager().setFacingRight(false, "Pedro");
+                getAnimationManager().setFacingRight(false, "PlayerArcher");
                 isRunning = true;
             }
             
-            if (Gdx.input.justTouched() && Gdx.input.isButtonPressed(Input.Buttons.RIGHT) && spell == null && this.getMana() >= SpellAttacks.getSpellCost("Fireball")) {
-                getAnimationManager().setState(State.ATTACKING, "Pedro");
-                castFireball();   
-                this.loseMana(SpellAttacks.getSpellCost("Fireball"));
-                getAnimationManager().setState(vfxState.FIREBALL);
+            if (Gdx.input.justTouched() && Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) {
+                getAnimationManager().setState(State.ATTACKING, "PlayerArcher");
             }
 
-            if (Gdx.input.justTouched() && Gdx.input.isButtonPressed(Input.Buttons.LEFT) && spell == null && this.getMana() >= SpellAttacks.getSpellCost("Lightning")) {
-                getAnimationManager().setState(State.ATTACKING, "Pedro");                           
-                castLightning();
-                this.loseMana(SpellAttacks.getSpellCost("Lightning"));
-                getAnimationManager().setState(vfxState.LIGHTNING);
+            if (Gdx.input.justTouched() && Gdx.input.isButtonPressed(Input.Buttons.LEFT) && arrow == null && canShoot) {
+                getAnimationManager().setState(State.ATTACKING, "PlayerArcher"); 
+                isShooting = true; 
+                canShoot = false;               
             }
 
             if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) && jumpCounter < 2) {
@@ -160,27 +160,21 @@ public class PlayerArcher extends GameEntity {
         }      
     }
     
-    private void castFireball() {
-        Vector2 targetPosition = body.getPosition();
-        spell = new SpellAttacks(SpellAttacks.SpellType.FIREBALL, world, body, targetPosition, getAnimationManager());
+    private void shootArrow() {
+    	isShooting = false;
+    	Vector2 targetPosition = body.getPosition();
+        arrow = new ArcherAttacks(ArcherAttacks.ArrowType.BASIC, world, body, targetPosition, getAnimationManager());
+        arrowDelayTimer = 0f;
     }
-
-    private void castLightning() {
-        Body nearestEnemyBody = findNearestDynamicBodyInRange(5f);
-        Vector2 targetPosition = body.getPosition();
-
-        if (nearestEnemyBody != null) {
-            targetPosition = nearestEnemyBody.getPosition().cpy().add(0, -0.15f);
-        } else {
-            float lightningOffsetX = getAnimationManager().isFacingRight("Pedro") ? 0.5f : -0.5f;
-            targetPosition.add(lightningOffsetX, -0.15f);
-        }
-
-        spell = new SpellAttacks(SpellAttacks.SpellType.LIGHTNING, world, body, targetPosition, getAnimationManager());
+    
+    private void delayShot() {
+    	arrowDelayTimer += Gdx.graphics.getDeltaTime();
+        if (arrowDelayTimer >= ARROW_DELAY) {
+        	shootArrow();
+        } 
     }
-
-
-    private Body findNearestDynamicBodyInRange(float range) {
+    
+	private Body findNearestDynamicBodyInRange(float range) {
         Array<Body> bodies = new Array<>();
         world.getBodies(bodies);
 
@@ -212,27 +206,27 @@ public class PlayerArcher extends GameEntity {
 
     private void updateAnimationState() {
         if (isDead()) {
-            if (getAnimationManager().isAnimationFinished("Pedro")) {
+            if (getAnimationManager().isAnimationFinished("PlayerArcher")) {
                 death = true;
             }
             return;
         }
 
-        if (getAnimationManager().getState("Pedro") == AnimationManager.State.ATTACKING) {
-            if (getAnimationManager().isAnimationFinished("Pedro")) {
-                getAnimationManager().setState(AnimationManager.State.IDLE, "Pedro");
+        if (getAnimationManager().getState("PlayerArcher") == AnimationManager.State.ATTACKING) {
+            if (getAnimationManager().isAnimationFinished("PlayerArcher")) {
+                getAnimationManager().setState(AnimationManager.State.IDLE, "PlayerArcher");
                 isRunning = false;
-                if (spell != null) {
-                    spell.removeSpell();
-                    spell = null;
+                if(arrow != null) {
+                	arrow.removeArrow();
+                	arrow = null;
                 }
             }
         } else if (body.getLinearVelocity().y != 0) {
-            getAnimationManager().setState(AnimationManager.State.RUNNING, "Pedro");
+            getAnimationManager().setState(AnimationManager.State.JUMPING, "PlayerArcher");
         } else if (velX != 0) {
-            getAnimationManager().setState(AnimationManager.State.RUNNING, "Pedro");
+            getAnimationManager().setState(AnimationManager.State.RUNNING, "PlayerArcher");
         } else {
-            getAnimationManager().setState(AnimationManager.State.IDLE, "Pedro");
+            getAnimationManager().setState(AnimationManager.State.IDLE, "PlayerArcher");
             isRunning = false;
         }
     }
@@ -240,13 +234,8 @@ public class PlayerArcher extends GameEntity {
     public void die() {
         if (!isDead) {
             isDead = true;
-            getAnimationManager().setState(AnimationManager.State.DYING, "Pedro");
+            getAnimationManager().setState(AnimationManager.State.DYING, "PlayerArcher");
             body.setLinearVelocity(0, 0);
-            
-            if (spell != null) {
-                spell.removeSpell();
-                spell = null;
-            }
             
             setHealth(100, 100);
             setMana(50, 50);
@@ -254,7 +243,7 @@ public class PlayerArcher extends GameEntity {
     }
 
     public void checkRespawn() {
-        if (isDead && getAnimationManager().isAnimationFinished("Pedro")) {
+        if (isDead && getAnimationManager().isAnimationFinished("PlayerArcher")) {
             respawn();
         }
     }

@@ -46,7 +46,7 @@ public class AnimationManager {
     private State pedroCurrentState = State.RUNNING;
     private State mlemCurrentState = State.RUNNING;
     private State peepeeCurrentState = State.RUNNING;
-    private State arhcerCurrentState = State.IDLE;
+    private State archerCurrentState = State.IDLE;
     private vfxState vfxCurrentState = vfxState.NULL;
 
     public AnimationManager() {
@@ -291,6 +291,7 @@ public class AnimationManager {
         mlemAnimationTime += delta;
         peepeeAnimationTime += delta;
         vfxAnimationTime += delta;
+        archerAnimationTime += delta;
     }
 
     public void setFacingRight(boolean isFacingRight, String entity) {
@@ -306,6 +307,9 @@ public class AnimationManager {
     		break;
     	case "Peepee":
     		this.peepeeFacingRight = isFacingRight;
+    		break;
+    	case "PlayerArcher":
+    		this.archerFacingRight = isFacingRight;
     		break;
     	}       
     }
@@ -336,6 +340,12 @@ public class AnimationManager {
                 peepeeAnimationTime = 0f;
             }
     		break;
+    	case "PlayerArcher":
+    		if (newState != archerCurrentState) {
+                archerCurrentState = newState;
+                archerAnimationTime = 0f;
+            }
+    		break;
     	}
     }
 
@@ -349,6 +359,8 @@ public class AnimationManager {
     		return mlemCurrentState;
     	case "Peepee":
     		return peepeeCurrentState;
+    	case "PlayerArcher":
+    		return archerCurrentState;
     	default:
     		return null;
     	}
@@ -393,6 +405,39 @@ public class AnimationManager {
         if (facingRight && currentFrame.isFlipX()) {
             currentFrame.flip(true, false);
         } else if (!facingRight && !currentFrame.isFlipX()) {
+            currentFrame.flip(true, false);
+        }
+
+        return currentFrame;
+    }
+    
+    public TextureRegion getArcherCurrentFrame() {
+        Animation<TextureRegion> currentAnimation;
+
+        switch (archerCurrentState) {
+        	case DYING:
+        		currentAnimation = archerDyingAnimation;
+        		break;
+            case ATTACKING:
+                currentAnimation = archerAttackingAnimation;
+                break;
+            case RUNNING:
+                currentAnimation = archerRunningAnimation;
+                break;
+            case JUMPING:
+                currentAnimation = archerJumpingAnimation;
+                break;
+            case IDLE:
+            default:
+                currentAnimation = archerIdleAnimation;
+                break;
+        }
+
+        TextureRegion currentFrame = currentAnimation.getKeyFrame(archerAnimationTime);
+
+        if (archerFacingRight && currentFrame.isFlipX()) {
+            currentFrame.flip(true, false);
+        } else if (!archerFacingRight && !currentFrame.isFlipX()) {
             currentFrame.flip(true, false);
         }
 
@@ -563,6 +608,21 @@ public class AnimationManager {
 				return false;
     		}
     	}
+    	else if(entity.equals("PlayerArcher")) {
+    		switch (currentState) {
+            case ATTACKING:
+                return archerAttackingAnimation.isAnimationFinished(archerAnimationTime);
+            case DYING:
+                return archerDyingAnimation.isAnimationFinished(archerAnimationTime);
+            case RUNNING:
+                return archerRunningAnimation.isAnimationFinished(archerAnimationTime);
+            case JUMPING:
+                return archerJumpingAnimation.isAnimationFinished(archerAnimationTime);
+            case IDLE:
+            default:
+                return archerIdleAnimation.isAnimationFinished(archerAnimationTime);
+    		}
+    	}
     	else
     		return false;
     }
@@ -577,6 +637,8 @@ public class AnimationManager {
 			return mlemFacingRight;
 		case "Peepee":
 			return peepeeFacingRight;
+		case "PlayerArcher":
+			return archerFacingRight;
 		default:
 			return false;
 		}

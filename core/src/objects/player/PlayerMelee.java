@@ -12,7 +12,7 @@ import com.badlogic.gdx.physics.box2d.World;
 import managers.AnimationManager;
 import managers.AnimationManager.State;
 import objects.GameEntity;
-import objects.spells.MeleeAttacks;
+import objects.attacks.MeleeAttacks;
 
 public class PlayerMelee extends GameEntity {
     private float initialX, initialY;
@@ -42,7 +42,6 @@ public class PlayerMelee extends GameEntity {
     @Override
     protected void onDeath() {
         die();
-        setHealth(100, 100);
     }
     
     public void respawn() {
@@ -188,6 +187,8 @@ public class PlayerMelee extends GameEntity {
             isDead = true;
             getAnimationManager().setState(AnimationManager.State.DYING, "PlayerMelee");
             body.setLinearVelocity(0, 0);
+            
+            setHealth(100, 100);
         }
     }
 

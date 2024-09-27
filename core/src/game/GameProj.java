@@ -27,12 +27,14 @@ import config.GameScreen;
 import config.Storage;
 import managers.TileMapHelper;
 import objects.GameEntity;
+import objects.attacks.ArcherAttacks;
+import objects.attacks.MeleeAttacks;
+import objects.attacks.SpellAttacks;
 import objects.enemies.Mlem;
 import objects.enemies.Peepee;
+import objects.player.PlayerArcher;
 import objects.player.PlayerMage;
 import objects.player.PlayerMelee;
-import objects.spells.MeleeAttacks;
-import objects.spells.SpellAttacks;
 
 public class GameProj implements Screen, ContactListener {
     private Viewport vp;
@@ -48,6 +50,7 @@ public class GameProj implements Screen, ContactListener {
     private Box2DDebugRenderer box2DDebugRenderer;
     private PlayerMelee playerMelee;
     private PlayerMage playerMage;
+    private PlayerArcher playerArcher;
     private Mlem mlem, mlem2;
     private Peepee peepee, peepee2, peepee3, peepee4;
     private GameScreen gameScreen;
@@ -77,10 +80,14 @@ public class GameProj implements Screen, ContactListener {
 			position.x = Math.round(playerMelee.getBody().getPosition().x * 100.0f * 10) / 10f;
 	    	position.y = Math.round(playerMelee.getBody().getPosition().y * 100.0f * 10) / 10f;
 	    }
-	    else {
+	    else if(Storage.getPlayerChar() == 1) {
 	    	position.x = Math.round(playerMage.getBody().getPosition().x * 100.0f * 10) / 10f;
 	    	position.y = Math.round(playerMage.getBody().getPosition().y * 100.0f * 10) / 10f;
 	    } 
+	    else {
+	    	position.x = Math.round(playerArcher.getBody().getPosition().x * 100.0f * 10) / 10f;
+	    	position.y = Math.round(playerArcher.getBody().getPosition().y * 100.0f * 10) / 10f;
+	    }
 		
 		camera.zoom = 0.9f;
     	camera.position.set(position);   	
@@ -103,6 +110,10 @@ public class GameProj implements Screen, ContactListener {
     		playerMage.checkRespawn(); 
             return;
         }
+    	else if (PlayerArcher.death) {
+    		playerArcher.checkRespawn(); 
+            return;
+        }
 
         ScreenUtils.clear(0.2f, 0.2f, 0.2f, 1);
         cameraUpdate();
@@ -116,6 +127,8 @@ public class GameProj implements Screen, ContactListener {
         	playerMelee.update(delta);
         if(playerMage != null)
         	playerMage.update(delta);
+        if(playerArcher != null)
+        	playerArcher.update(delta);
         if(peepee != null)
         	peepee.update(delta);
         if(peepee2 != null)
@@ -148,6 +161,8 @@ public class GameProj implements Screen, ContactListener {
         	playerMelee.render(batch);
         if(playerMage != null)
         	playerMage.render(batch);
+        if(playerArcher != null)
+        	playerArcher.render(batch);
         
         box2DDebugRenderer.render(world, camera.combined.scl(100.0f));
     }
@@ -227,6 +242,10 @@ public class GameProj implements Screen, ContactListener {
 	public World getWorld() {
 		return world;
 	}
+	
+	public void setPlayerArcher(PlayerArcher player) {
+		this.playerArcher = player;
+	}
 
 	public void setPlayerMelee(PlayerMelee player) {
 		this.playerMelee = player;
@@ -283,9 +302,13 @@ public class GameProj implements Screen, ContactListener {
 	    if (Storage.getPlayerChar() == 1) {
 	        isPlayerA = bodyA.getUserData() instanceof PlayerMelee;
 	        isPlayerB = bodyB.getUserData() instanceof PlayerMelee;
-	    } else {
+	    } else if (Storage.getPlayerChar() == 2) {
 	        isPlayerA = bodyA.getUserData() instanceof PlayerMage;
 	        isPlayerB = bodyB.getUserData() instanceof PlayerMage;
+	    }
+	    else {
+	        isPlayerA = bodyA.getUserData() instanceof PlayerArcher;
+	        isPlayerB = bodyB.getUserData() instanceof PlayerArcher;
 	    }
 
 	    boolean isLevel2A = "level2".equals(bodyA.getUserData());
@@ -319,6 +342,9 @@ public class GameProj implements Screen, ContactListener {
 	    } else if (((isPlayerA && isDeathB) || (isPlayerB && isDeathA)) && Storage.getPlayerChar() == 2) {
 	        PlayerMage player = isPlayerA ? (PlayerMage) bodyA.getUserData() : (PlayerMage) bodyB.getUserData();
 	        player.die();
+	    } else if (((isPlayerA && isDeathB) || (isPlayerB && isDeathA)) && Storage.getPlayerChar() == 3) {
+	    	PlayerArcher player = isPlayerA ? (PlayerArcher) bodyA.getUserData() : (PlayerArcher) bodyB.getUserData();
+	        player.die();
 	    }
 
 	    if (isPeepeeA && !isPlayerB && isEWallsB) {
@@ -346,7 +372,16 @@ public class GameProj implements Screen, ContactListener {
 	            PlayerMage player = isPlayerA ? (PlayerMage) bodyA.getUserData() : (PlayerMage) bodyB.getUserData();
 	            player.die();
 	        }
-	    }
+	    } else if (((isPeepeeA && isPlayerB) || (isPeepeeB && isPlayerA)) && Storage.getPlayerChar() == 3) {
+	        if ((peepee != null && !peepee.death) ||
+	            (peepee2 != null && !peepee2.death) ||
+	            (peepee3 != null && !peepee3.death) ||
+	            (peepee4 != null && !peepee4.death)) {
+
+	        	PlayerArcher player = isPlayerA ? (PlayerArcher) bodyA.getUserData() : (PlayerArcher) bodyB.getUserData();
+	            player.die();
+	        }
+	    } 
 
 	    if (isMlemA && !isPlayerB && isEWallsB) {
 	        ((Mlem) bodyA.getUserData()).reverseDirection();
@@ -365,6 +400,11 @@ public class GameProj implements Screen, ContactListener {
 	            PlayerMage player = isPlayerA ? (PlayerMage) bodyA.getUserData() : (PlayerMage) bodyB.getUserData();
 	            player.die();
 	        }
+	    } else if (((isMlemA && isPlayerB) || (isMlemB && isPlayerA)) && Storage.getPlayerChar() == 2) {
+	        if ((peepee != null && !mlem.death) || (mlem2 != null && !mlem2.death)) {
+	        	PlayerArcher player = isPlayerA ? (PlayerArcher) bodyA.getUserData() : (PlayerArcher) bodyB.getUserData();
+	            player.die();
+	        }
 	    }
 
 	    boolean isSpellA = bodyA.getUserData() instanceof SpellAttacks;
@@ -372,6 +412,9 @@ public class GameProj implements Screen, ContactListener {
 	    
 	    boolean isWeaponA = bodyA.getUserData() instanceof MeleeAttacks;
 	    boolean isWeaponB = bodyB.getUserData() instanceof MeleeAttacks;
+	    
+	    boolean isArrowA = bodyA.getUserData() instanceof ArcherAttacks;
+	    boolean isArrowB = bodyB.getUserData() instanceof ArcherAttacks;
 
 	    if ((isSpellA && isEnemyB && !isPlayerB) || (isSpellB && isEnemyA && !isPlayerA)) {
 	        SpellAttacks spell = isSpellA ? (SpellAttacks) bodyA.getUserData() : (SpellAttacks) bodyB.getUserData();
@@ -385,6 +428,20 @@ public class GameProj implements Screen, ContactListener {
 	        }
 
 	        spell.markForRemoval();
+	    }
+	    
+	    if ((isArrowA && isEnemyB && !isPlayerB) || (isArrowB && isEnemyA && !isPlayerA)) {
+	    	ArcherAttacks arrow = isArrowA ? (ArcherAttacks) bodyA.getUserData() : (ArcherAttacks) bodyB.getUserData();
+
+	        if (isEnemyA) {
+	            GameEntity enemy = (GameEntity) bodyA.getUserData();
+	            arrow.dealDamage(enemy);
+	        } else if (isEnemyB) {
+	            GameEntity enemy = (GameEntity) bodyB.getUserData();
+	            arrow.dealDamage(enemy);	
+	        }
+
+	        arrow.markForRemoval();
 	    }
 
 	    if ((isWeaponA && isEnemyB && !isPlayerB) || (isWeaponB && isEnemyA && !isPlayerA)) {
@@ -419,10 +476,14 @@ public class GameProj implements Screen, ContactListener {
 	    	isPlayerA = fixtureA.getBody().getUserData() instanceof PlayerMelee;
 		    isPlayerB = fixtureB.getBody().getUserData() instanceof PlayerMelee;
 	    }
-	    else {
+	    else if(Storage.getPlayerChar() == 2) {
 	    	isPlayerA = fixtureA.getBody().getUserData() instanceof PlayerMage;
 		    isPlayerB = fixtureB.getBody().getUserData() instanceof PlayerMage;
-	    }	    
+	    }
+	    else {
+	    	isPlayerA = fixtureA.getBody().getUserData() instanceof PlayerArcher;
+		    isPlayerB = fixtureB.getBody().getUserData() instanceof PlayerArcher;
+	    }	
 	    
 	    boolean isEWallsA = "eWall".equals(fixtureA.getBody().getUserData());
 	    boolean isEWallsB = "eWall".equals(fixtureB.getBody().getUserData());
@@ -454,7 +515,11 @@ public class GameProj implements Screen, ContactListener {
 	    			Storage.setPlayerChar(2);
 	    			gameScreen.switchToNewState(GameScreen.HOME);
 	    		}
-	    		else {
+	    		else if(Storage.getPlayerChar() == 2){
+	    			Storage.setPlayerChar(3);
+	    			gameScreen.switchToNewState(GameScreen.HOME);
+	    		}
+	    		else if(Storage.getPlayerChar() == 3){
 	    			Storage.setPlayerChar(1);
 	    			gameScreen.switchToNewState(GameScreen.HOME);
 	    		}
