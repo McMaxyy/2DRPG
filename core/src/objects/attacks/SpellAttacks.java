@@ -16,11 +16,11 @@ public class SpellAttacks extends AttackEntity{
     private World world;
     private Vector2 velocity;
     private float distanceTraveled;
-    private float maxDistance = 500f;  // Adjust for how far the fireball should travel
+    private float maxDistance = 500f;
     private AnimationManager animationManager;
     private boolean isMarkedForRemoval = false;
     private boolean facingRight;
-    private static int lightningCost, fireballCost;
+    private static int lightningCost = 20, fireballCost = 10;
 
     public SpellAttacks(SpellType type, World world, Body playerBody, Vector2 targetPosition, AnimationManager animationManager) {
     	super(type == SpellType.FIREBALL ? 30 : 50);
@@ -28,8 +28,6 @@ public class SpellAttacks extends AttackEntity{
         this.type = type;
         this.world = world;
         this.facingRight = getAnimationManager().isFacingRight("Pedro");
-        lightningCost = 20;
-        fireballCost = 10;
         if (type == SpellType.LIGHTNING) {
             createLightningSpell(playerBody, targetPosition);
         } else if (type == SpellType.FIREBALL) {
@@ -56,10 +54,8 @@ public class SpellAttacks extends AttackEntity{
         BodyDef spellBodyDef = new BodyDef();
         spellBodyDef.type = BodyDef.BodyType.KinematicBody;
         
-        // Adjust offset based on player's facing direction
-        float offsetX = facingRight ? 0.5f : -0.5f;  // Positive offset for right, negative for left
+        float offsetX = facingRight ? 0.5f : -0.5f; 
         
-        // Apply the correct offset for the fireball's position
         spellBodyDef.position.set(playerBody.getPosition().x + offsetX, playerBody.getPosition().y);
         spellBodyDef.bullet = true;
 

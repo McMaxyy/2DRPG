@@ -16,7 +16,6 @@ import managers.AnimationManager;
 import managers.AnimationManager.State;
 import objects.GameEntity;
 import objects.attacks.ArcherAttacks;
-import objects.attacks.SpellAttacks;
 
 public class PlayerArcher extends GameEntity {
     private float initialX, initialY;
@@ -25,10 +24,13 @@ public class PlayerArcher extends GameEntity {
     private boolean isRunning, isDead, isShooting, canShoot = true;
     public static boolean death = false;
     private World world;
-    private ArcherAttacks arrow;
+    private ArcherAttacks arrow, dog, dogAttack;
     private int mana = 50, maxMana = 50;
-    private final float ARROW_DELAY = 0.2f;
-    private float arrowDelayTimer = 0f;
+    private final float ARROW_DELAY = 0.2f, DOG_DELAY = 0.7f;
+    private float arrowDelayTimer = 0f, dogDelayTimer = 0f;
+    private Body dogFollower;
+    private boolean dogAttacking = false;
+    private Body nearestEnemyBody;
 
     public PlayerArcher(float width, float height, Body body, float initialX, float initialY, World world) {
         super(width, height, body);
@@ -40,11 +42,15 @@ public class PlayerArcher extends GameEntity {
         this.world = world;
         setHealth(100, 100);   
         setMana(mana, maxMana);
+        
+        if(dogFollower == null) {
+        	dog = new ArcherAttacks(ArcherAttacks.ArrowType.DOG, world, body, body.getPosition(), getAnimationManager());
+        }
     }
-    
-    public void respawn() {
+
+	public void respawn() {
     	if (arrow != null) {
-    		arrow.removeArrow();
+    		arrow.removeArrow("Arrow");
         }
         body.setTransform(initialX / 100f, initialY / 100f, 0);
         isDead = false;
@@ -71,10 +77,18 @@ public class PlayerArcher extends GameEntity {
         updateAnimationState();
         getAnimationManager().update(Gdx.graphics.getDeltaTime());
         
+        nearestEnemyBody = findNearestDynamicBodyInRange(5f);
+        
+        if(dogAttacking) {
+        	dogAttack();
+        }
+        
+        updateDogPosition();
+        
         if (arrow != null) {
         	arrow.update(Gdx.graphics.getDeltaTime());
         	
-        	if(arrow.getBody() == null)
+        	if(arrow.getBody("Arrow") == null)
         		arrow = null;
         }
         
@@ -84,15 +98,25 @@ public class PlayerArcher extends GameEntity {
         
         if(getAnimationManager().isAnimationFinished("PlayerArcher"))
         	canShoot = true;
+        
+        
     }
 
     @Override
     public void render(SpriteBatch batch) {
         if (!death) {
             batch.begin();
+                    
             batch.draw(getAnimationManager().getArcherCurrentFrame(), 
                         x - width * 1.2f, y - height / 1.3f,
                         width * 2.3f, height * 1.5f);
+            
+            if(dog.getDogFollower() != null) {
+            	batch.draw(getAnimationManager().getDogCurrentFrame(), 
+            			dog.getDogFollower().getPosition().x * 100 - width * -0.2f, 
+            			dog.getDogFollower().getPosition().y * 100 - height / 2f, 
+                        width * 1.7f, height * 1.1f);
+            }  
             
             drawHealthBar(batch);
             drawManaBar(batch);
@@ -100,11 +124,11 @@ public class PlayerArcher extends GameEntity {
             if (arrow != null) {
                 Texture arrowTex = Storage.assetManager.get("character/Archer/Arrow.png");
                 
-                if (arrowTex != null && arrow.getBody() != null) {
+                if (arrowTex != null && arrow.getBody("Arrow") != null) {
                     TextureRegion arrowRegion = new TextureRegion(arrowTex);
                     
-                    float arrowX = arrow.getBody().getPosition().x * 100f;
-                    float arrowY = arrow.getBody().getPosition().y * 100f;
+                    float arrowX = arrow.getBody("Arrow").getPosition().x * 100f;
+                    float arrowY = arrow.getBody("Arrow").getPosition().y * 100f;
                     
                     boolean flipX = !arrow.isFacingRight();
                     
@@ -118,6 +142,34 @@ public class PlayerArcher extends GameEntity {
                     
             batch.end();
         }     
+    }
+    
+    private void updateDogPosition() {
+        float offsetX = getAnimationManager().isFacingRight("PlayerArcher") ? -0.6f : -0.6f;      
+
+        getAnimationManager().setFacingRight(getAnimationManager().isFacingRight("PlayerArcher"), "DogFollower");
+
+        if (!dogAttacking) {
+            dog.getDogFollower().setTransform(body.getPosition().x + offsetX, body.getPosition().y, 0);
+
+            AnimationManager.State playerState = getAnimationManager().getState("PlayerArcher");
+
+            switch (playerState) {
+                case RUNNING:
+                    getAnimationManager().setState(AnimationManager.State.RUNNING, "DogFollower");
+                    break;
+                case JUMPING:
+                    getAnimationManager().setState(AnimationManager.State.JUMPING, "DogFollower");
+                    break;
+                case DYING:
+                    getAnimationManager().setState(AnimationManager.State.DYING, "DogFollower");
+                    break;
+                case IDLE:
+                default:
+                    getAnimationManager().setState(AnimationManager.State.IDLE, "DogFollower");
+                    break;
+            }
+        }
     }
 
     private void checkUserInput() {
@@ -135,8 +187,9 @@ public class PlayerArcher extends GameEntity {
                 isRunning = true;
             }
             
-            if (Gdx.input.justTouched() && Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) {
-                getAnimationManager().setState(State.ATTACKING, "PlayerArcher");
+            if (Gdx.input.justTouched() && Gdx.input.isButtonPressed(Input.Buttons.RIGHT) && nearestEnemyBody != null && !dogAttacking) {
+            	dogAttack = new ArcherAttacks(ArcherAttacks.ArrowType.DOG_ATTACK, world, body, nearestEnemyBody.getPosition(), getAnimationManager());
+            	dogAttacking = true;              
             }
 
             if (Gdx.input.justTouched() && Gdx.input.isButtonPressed(Input.Buttons.LEFT) && arrow == null && canShoot) {
@@ -174,23 +227,56 @@ public class PlayerArcher extends GameEntity {
         } 
     }
     
-	private Body findNearestDynamicBodyInRange(float range) {
+    private void returnDog() {
+        dogDelayTimer += Gdx.graphics.getDeltaTime();
+        if (dogDelayTimer >= DOG_DELAY) {
+            dogAttacking = false;
+            nearestEnemyBody = null;
+            dogDelayTimer = 0f;
+            dogAttack.removeArrow("DogAttack");
+        }       
+    }
+    
+    private void dogAttack() {           	
+        if (dogAttacking && nearestEnemyBody != null) {          
+            getAnimationManager().setState(AnimationManager.State.ATTACKING, "DogFollower");
+            if(getAnimationManager().isFacingRight("PlayerArcher"))
+                dog.getDogFollower().setTransform(nearestEnemyBody.getPosition().x - 0.5f, nearestEnemyBody.getPosition().y + 0.1f, 0);
+            else
+                dog.getDogFollower().setTransform(nearestEnemyBody.getPosition().x + 0.4f, nearestEnemyBody.getPosition().y + 0.1f, 0);
+
+            returnDog();
+        }
+        else {
+        	dogAttacking = false;    
+        	dogDelayTimer = 0f;
+        	dogAttack.removeArrow("DogAttack");
+        }   
+    }
+    
+    private Body findNearestDynamicBodyInRange(float range) {
         Array<Body> bodies = new Array<>();
         world.getBodies(bodies);
 
         Body nearestBody = null;
         float nearestDistance = range * range;
 
+        float playerX = this.body.getPosition().x;
         float playerY = this.body.getPosition().y;
         float playerHeight = this.height;
+        boolean playerFacingRight = getAnimationManager().isFacingRight("PlayerArcher");
         float heightTolerance = playerHeight / 300f;
 
         for (Body body : bodies) {
-            if (body.getType() == BodyDef.BodyType.DynamicBody && body != this.body) {
+            if (body.getType() == BodyDef.BodyType.DynamicBody && body != this.body && body != dog.getDogFollower()) {
                 Vector2 bodyPos = body.getPosition();
                 Vector2 playerPos = this.body.getPosition();
 
-                if (Math.abs(bodyPos.y - playerY) <= heightTolerance) {
+                // Check if the enemy is within the player's line of sight
+                boolean isInFacingDirection = (playerFacingRight && bodyPos.x > playerX) || (!playerFacingRight && bodyPos.x < playerX);
+
+                // Proceed only if the enemy is in the direction the player is facing
+                if (isInFacingDirection && Math.abs(bodyPos.y - playerY) <= heightTolerance) {
                     float distanceSquared = playerPos.dst2(bodyPos);
 
                     if (distanceSquared <= nearestDistance) {
@@ -217,7 +303,7 @@ public class PlayerArcher extends GameEntity {
                 getAnimationManager().setState(AnimationManager.State.IDLE, "PlayerArcher");
                 isRunning = false;
                 if(arrow != null) {
-                	arrow.removeArrow();
+                	arrow.removeArrow("Arrow");
                 	arrow = null;
                 }
             }

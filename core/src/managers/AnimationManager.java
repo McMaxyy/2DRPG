@@ -28,6 +28,11 @@ public class AnimationManager {
     private Animation<TextureRegion> archerJumpingAnimation;
     private Animation<TextureRegion> archerAttackingAnimation;
     private Animation<TextureRegion> archerDyingAnimation;
+    private Animation<TextureRegion> dogIdleAnimation;
+    private Animation<TextureRegion> dogRunningAnimation;
+    private Animation<TextureRegion> dogJumpingAnimation;
+    private Animation<TextureRegion> dogAttackingAnimation;
+    private Animation<TextureRegion> dogDyingAnimation;
 
     private float animationTime = 0f;
     private float pedroAnimationTime = 0f;
@@ -35,7 +40,9 @@ public class AnimationManager {
     private float mlemAnimationTime = 0f;
     private float vfxAnimationTime = 0f;
     private float archerAnimationTime = 0f;
-    private boolean facingRight, pedroFacingRight, mlemFacingRight, peepeeFacingRight, archerFacingRight;   
+    private float dogAnimationTime = 0f;
+    private boolean facingRight, pedroFacingRight, mlemFacingRight, peepeeFacingRight, 
+    archerFacingRight, dogFacingRight;   
     public enum State {
         IDLE, RUNNING, JUMPING, ATTACKING, DYING
     }
@@ -47,6 +54,7 @@ public class AnimationManager {
     private State mlemCurrentState = State.RUNNING;
     private State peepeeCurrentState = State.RUNNING;
     private State archerCurrentState = State.IDLE;
+    private State dogCurrentState = State.IDLE;
     private vfxState vfxCurrentState = vfxState.NULL;
 
     public AnimationManager() {
@@ -164,6 +172,56 @@ public class AnimationManager {
 
 	private void loadPlayerAnimations() {
         try {
+        	// Dog running
+        	Texture dogRunningTex = Storage.assetManager.get("character/Dog/Running.png", Texture.class);
+    		dogRunningTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);           
+            TextureRegion[][] dogRunningFrames = TextureRegion.split(dogRunningTex, dogRunningTex.getWidth() / 6, dogRunningTex.getHeight());
+            Array<TextureRegion> dogRunningFrame = new Array<>();
+            for (int i = 0; i < 6; i++) {
+            	dogRunningFrame.add(dogRunningFrames[0][i]);
+            }
+            dogRunningAnimation = new Animation<>(0.08f, dogRunningFrame, Animation.PlayMode.LOOP);
+        	
+            // Dog idle
+            Texture dogIdleTex = Storage.assetManager.get("character/Dog/Idle.png", Texture.class);
+    		dogIdleTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);           
+            TextureRegion[][] dogIdleFrames = TextureRegion.split(dogIdleTex, dogIdleTex.getWidth() / 6, dogIdleTex.getHeight());
+            Array<TextureRegion> dogIdleFrame = new Array<>();
+            for (int i = 0; i < 6; i++) {
+            	dogIdleFrame.add(dogIdleFrames[0][i]);
+            }
+            dogIdleAnimation = new Animation<>(0.1f, dogIdleFrame, Animation.PlayMode.LOOP);
+            
+            // Dog dying
+            Texture dogDyingTex = Storage.assetManager.get("character/Dog/Dying.png", Texture.class);
+    		dogDyingTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);           
+            TextureRegion[][] dogDyingFrames = TextureRegion.split(dogDyingTex, dogDyingTex.getWidth() / 6, dogDyingTex.getHeight());
+            Array<TextureRegion> dogDyingFrame = new Array<>();
+            for (int i = 0; i < 6; i++) {
+            	dogDyingFrame.add(dogDyingFrames[0][i]);
+            }
+            dogDyingAnimation = new Animation<>(0.09f, dogDyingFrame, Animation.PlayMode.NORMAL);
+            
+            // Dog attacking
+            Texture dogAttackingTex = Storage.assetManager.get("character/Dog/Attacking.png", Texture.class);
+    		dogAttackingTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);           
+            TextureRegion[][] dogAttackingFrames = TextureRegion.split(dogAttackingTex, dogAttackingTex.getWidth() / 5, dogAttackingTex.getHeight());
+            Array<TextureRegion> dogAttackingFrame = new Array<>();
+            for (int i = 0; i < 5; i++) {
+            	dogAttackingFrame.add(dogAttackingFrames[0][i]);
+            }
+            dogAttackingAnimation = new Animation<>(0.08f, dogAttackingFrame, Animation.PlayMode.NORMAL);
+            
+            // Dog jumping
+            Texture dogJumpingTex = Storage.assetManager.get("character/Dog/Jumping.png", Texture.class);
+    		dogJumpingTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);           
+            TextureRegion[][] dogJumpingFrames = TextureRegion.split(dogJumpingTex, dogJumpingTex.getWidth() / 7, dogJumpingTex.getHeight());
+            Array<TextureRegion> dogJumpingFrame = new Array<>();
+            for (int i = 0; i < 7; i++) {
+            	dogJumpingFrame.add(dogJumpingFrames[0][i]);
+            }
+            dogJumpingAnimation = new Animation<>(0.08f, dogJumpingFrame, Animation.PlayMode.NORMAL);
+        	
         	// Archer running
         	Texture archerRunningTex = Storage.assetManager.get("character/Archer/Running.png", Texture.class);
     		archerRunningTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);           
@@ -292,6 +350,7 @@ public class AnimationManager {
         peepeeAnimationTime += delta;
         vfxAnimationTime += delta;
         archerAnimationTime += delta;
+        dogAnimationTime += delta;
     }
 
     public void setFacingRight(boolean isFacingRight, String entity) {
@@ -310,6 +369,9 @@ public class AnimationManager {
     		break;
     	case "PlayerArcher":
     		this.archerFacingRight = isFacingRight;
+    		break;
+    	case "DogFollower":
+    		this.dogFacingRight = isFacingRight;
     		break;
     	}       
     }
@@ -346,6 +408,12 @@ public class AnimationManager {
                 archerAnimationTime = 0f;
             }
     		break;
+    	case "DogFollower":
+    		if (newState != dogCurrentState) {
+    			dogCurrentState = newState;
+                dogAnimationTime = 0f;
+            }
+    		break;
     	}
     }
 
@@ -361,6 +429,8 @@ public class AnimationManager {
     		return peepeeCurrentState;
     	case "PlayerArcher":
     		return archerCurrentState;
+    	case "DogFollower":
+    		return dogCurrentState;
     	default:
     		return null;
     	}
@@ -438,6 +508,39 @@ public class AnimationManager {
         if (archerFacingRight && currentFrame.isFlipX()) {
             currentFrame.flip(true, false);
         } else if (!archerFacingRight && !currentFrame.isFlipX()) {
+            currentFrame.flip(true, false);
+        }
+
+        return currentFrame;
+    }
+    
+    public TextureRegion getDogCurrentFrame() {
+        Animation<TextureRegion> currentAnimation;
+
+        switch (dogCurrentState) {
+        	case DYING:
+        		currentAnimation = dogDyingAnimation;
+        		break;
+            case ATTACKING:
+                currentAnimation = dogAttackingAnimation;
+                break;
+            case RUNNING:
+                currentAnimation = dogRunningAnimation;
+                break;
+            case JUMPING:
+                currentAnimation = dogJumpingAnimation;
+                break;
+            case IDLE:
+            default:
+                currentAnimation = dogIdleAnimation;
+                break;
+        }
+
+        TextureRegion currentFrame = currentAnimation.getKeyFrame(dogAnimationTime);
+
+        if (dogFacingRight && currentFrame.isFlipX()) {
+            currentFrame.flip(true, false);
+        } else if (!dogFacingRight && !currentFrame.isFlipX()) {
             currentFrame.flip(true, false);
         }
 
@@ -623,6 +726,21 @@ public class AnimationManager {
                 return archerIdleAnimation.isAnimationFinished(archerAnimationTime);
     		}
     	}
+    	else if(entity.equals("DogFollower")) {
+    		switch (currentState) {
+            case ATTACKING:
+                return dogAttackingAnimation.isAnimationFinished(dogAnimationTime);
+            case DYING:
+                return dogDyingAnimation.isAnimationFinished(dogAnimationTime);
+            case RUNNING:
+                return dogRunningAnimation.isAnimationFinished(dogAnimationTime);
+            case JUMPING:
+                return dogJumpingAnimation.isAnimationFinished(dogAnimationTime);
+            case IDLE:
+            default:
+                return dogIdleAnimation.isAnimationFinished(dogAnimationTime);
+    		}
+    	}
     	else
     		return false;
     }
@@ -639,6 +757,8 @@ public class AnimationManager {
 			return peepeeFacingRight;
 		case "PlayerArcher":
 			return archerFacingRight;
+		case "DogFollower":
+			return dogFacingRight;
 		default:
 			return false;
 		}

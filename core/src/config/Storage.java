@@ -71,6 +71,13 @@ public class Storage {
     	assetManager.load("character/Archer/Jumping.png", Texture.class);
     	assetManager.load("character/Archer/Idle.png", Texture.class);
     	assetManager.load("character/Archer/Arrow.png", Texture.class);
+    	
+    	// Dog follower
+    	assetManager.load("character/Dog/Running.png", Texture.class);
+    	assetManager.load("character/Dog/Dying.png", Texture.class);
+    	assetManager.load("character/Dog/Attacking.png", Texture.class);
+    	assetManager.load("character/Dog/Jumping.png", Texture.class);
+    	assetManager.load("character/Dog/Idle.png", Texture.class);
 		
         // Walking animation
         assetManager.load("character/Walking/Minotaur_01_Walking_000.png", Texture.class);

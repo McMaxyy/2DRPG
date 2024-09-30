@@ -12,11 +12,11 @@ import objects.AttackEntity;
 
 public class ArcherAttacks extends AttackEntity{
 	public enum ArrowType {
-		BASIC, DOG
+		BASIC, DOG, DOG_ATTACK
 	}
 	
 	private ArrowType type;
-	private Body arrowBody;
+	private Body arrowBody, dogFollower, dogAttack;
     private World world;
 	private Vector2 velocity;
     private float distanceTraveled;
@@ -26,14 +26,77 @@ public class ArcherAttacks extends AttackEntity{
     private boolean facingRight;
 
 	public ArcherAttacks(ArrowType type, World world, Body playerBody, Vector2 targetPosition, AnimationManager animationManager) {
-		super(10);
+		super(type == ArrowType.BASIC ? 10 : type == ArrowType.DOG ? 0 : 20);
 		this.animationManager = animationManager;
         this.type = type;
         this.world = world;
         this.facingRight = getAnimationManager().isFacingRight("PlayerArcher");
-        createArrow(playerBody);
+        switch(type) {
+        case BASIC:
+        	createArrow(playerBody);
+        	break;
+        case DOG:
+        	setDogFollower(createDog(playerBody));
+        	break;
+        case DOG_ATTACK:
+        	dogAttack(playerBody, targetPosition);
+        	break;
+        }
 	}
 	
+	private void dogAttack(Body playerBody, Vector2 targetPosition) {
+        if (dogAttack != null)
+            return;
+
+        BodyDef dogAttackBodyDef = new BodyDef();
+        dogAttackBodyDef.type = BodyDef.BodyType.KinematicBody;
+        dogAttackBodyDef.position.set(targetPosition);
+
+        dogAttack = world.createBody(dogAttackBodyDef);
+
+        PolygonShape attackShape = new PolygonShape();
+        attackShape.setAsBox(0.4f, 0.3f);
+
+        FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.shape = attackShape;
+        fixtureDef.density = 1f;
+        fixtureDef.isSensor = true;
+
+        dogAttack.createFixture(fixtureDef);
+        attackShape.dispose();
+
+        dogAttack.setUserData(this);
+    }
+	
+	private Body createDog(Body body) {
+		if(getDogFollower() != null)
+			return null;
+		
+		BodyDef dogBodyDef = new BodyDef();
+		dogBodyDef.type = BodyDef.BodyType.DynamicBody;
+		
+		float offsetX = getAnimationManager().isFacingRight("PlayerArcher") ? -0.6f : 0.6f;
+		
+		dogBodyDef.position.set(body.getPosition().x + offsetX, body.getPosition().y);
+		
+		setDogFollower(world.createBody(dogBodyDef));
+		
+		PolygonShape dogShape = new PolygonShape();
+		dogShape.setAsBox(0.3f, 0.2f);
+		
+		FixtureDef fixtureDef = new FixtureDef();
+		fixtureDef.shape = dogShape;
+		fixtureDef.density = 1f;
+		fixtureDef.isSensor = true;
+		
+		getDogFollower().createFixture(fixtureDef);
+		dogShape.dispose();
+		
+		getDogFollower().setUserData(this.getDogFollower());
+		
+		return getDogFollower();
+	}
+
 	private void createArrow(Body playerBody) {
         if (arrowBody != null) {
             return;
@@ -42,7 +105,7 @@ public class ArcherAttacks extends AttackEntity{
         BodyDef arrowBodyDef = new BodyDef();
         arrowBodyDef.type = BodyDef.BodyType.KinematicBody;
         
-        float offsetX = facingRight ? 0.5f : -0.5f;  // Positive offset for right, negative for left
+        float offsetX = facingRight ? 0.5f : -0.5f;
         
         arrowBodyDef.position.set(playerBody.getPosition().x + offsetX, playerBody.getPosition().y);
         arrowBodyDef.bullet = true;
@@ -72,8 +135,12 @@ public class ArcherAttacks extends AttackEntity{
             distanceTraveled += velocity.len() * deltaTime;
 
             if (distanceTraveled >= maxDistance || isMarkedForRemoval) {
-                removeArrow();
+                removeArrow("Arrow");
             }
+        }
+        else if(dogAttack != null && type == ArrowType.DOG_ATTACK) {
+        	if(isMarkedForRemoval)
+        		removeArrow("DogAttack");
         }
     }
 	
@@ -85,22 +152,49 @@ public class ArcherAttacks extends AttackEntity{
         this.isMarkedForRemoval = true;
     }
 
-    public void removeArrow() {
-        if (arrowBody != null) {
-        	world.destroyBody(arrowBody);
-        	arrowBody = null;
-        }
+    public void removeArrow(String attack) {
+    	switch(attack) {
+    	case "Arrow":
+    		if (arrowBody != null) {
+            	world.destroyBody(arrowBody);
+            	arrowBody = null;
+            }
+    		break;
+    	case "DogAttack":
+    		if (dogAttack != null) {
+            	world.destroyBody(dogAttack);
+            	dogAttack = null;
+            }
+    		break;
+    	}
     }
 
     public ArrowType getType() {
         return type;
     }
 
-    public Body getBody() {
-        return arrowBody;
+    public Body getBody(String body) {
+        switch (body) {
+            case "Arrow":
+                return arrowBody;
+            case "Dog":
+                return dogFollower;
+            case "DogAttack":
+                return dogAttack;
+            default:
+                return null;
+        }
     }
     
     public boolean isFacingRight() {
     	return facingRight;
     }
+
+	public Body getDogFollower() {
+		return dogFollower;
+	}
+
+	public void setDogFollower(Body dogFollower) {
+		this.dogFollower = dogFollower;
+	}
 }

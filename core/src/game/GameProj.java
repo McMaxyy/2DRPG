@@ -390,18 +390,18 @@ public class GameProj implements Screen, ContactListener {
 	    }
 
 	    if (((isMlemA && isPlayerB) || (isMlemB && isPlayerA)) && Storage.getPlayerChar() == 1) {
-	        if ((peepee != null && !mlem.death) || (mlem2 != null && !mlem2.death)) {
+	        if ((mlem != null && !mlem.death) || (mlem2 != null && !mlem2.death)) {
 	            PlayerMelee player = isPlayerA ? (PlayerMelee) bodyA.getUserData() : (PlayerMelee) bodyB.getUserData();
 	            if(!player.isInvulnerable())
 	            	player.die();
 	        }
 	    } else if (((isMlemA && isPlayerB) || (isMlemB && isPlayerA)) && Storage.getPlayerChar() == 2) {
-	        if ((peepee != null && !mlem.death) || (mlem2 != null && !mlem2.death)) {
+	        if ((mlem != null && !mlem.death) || (mlem2 != null && !mlem2.death)) {
 	            PlayerMage player = isPlayerA ? (PlayerMage) bodyA.getUserData() : (PlayerMage) bodyB.getUserData();
 	            player.die();
 	        }
-	    } else if (((isMlemA && isPlayerB) || (isMlemB && isPlayerA)) && Storage.getPlayerChar() == 2) {
-	        if ((peepee != null && !mlem.death) || (mlem2 != null && !mlem2.death)) {
+	    } else if (((isMlemA && isPlayerB) || (isMlemB && isPlayerA)) && Storage.getPlayerChar() == 3) {
+	        if ((mlem != null && !mlem.death) || (mlem2 != null && !mlem2.death)) {
 	        	PlayerArcher player = isPlayerA ? (PlayerArcher) bodyA.getUserData() : (PlayerArcher) bodyB.getUserData();
 	            player.die();
 	        }
@@ -436,9 +436,11 @@ public class GameProj implements Screen, ContactListener {
 	        if (isEnemyA) {
 	            GameEntity enemy = (GameEntity) bodyA.getUserData();
 	            arrow.dealDamage(enemy);
+	            enemy.stopEntity();
 	        } else if (isEnemyB) {
 	            GameEntity enemy = (GameEntity) bodyB.getUserData();
 	            arrow.dealDamage(enemy);	
+	            enemy.stopEntity();
 	        }
 
 	        arrow.markForRemoval();
