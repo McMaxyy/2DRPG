@@ -12,6 +12,7 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.Array;
 
+import config.Storage;
 import managers.AnimationManager;
 import managers.AnimationManager.State;
 import managers.AnimationManager.vfxState;
@@ -87,8 +88,10 @@ public class PlayerMage extends GameEntity {
                         x - width * 1.25f, y - height / 1.4f,
                         width * 2.5f, height * 1.3f);
             
-            drawHealthBar(batch);
-            drawManaBar(batch);
+            if(Storage.getLevelNum() != 0) {
+            	drawHealthBar(batch);
+                drawManaBar(batch);
+            }           
             
             if (getAnimationManager().getState() == vfxState.LIGHTNING && spell != null) {
                 TextureRegion lightningFrame = getAnimationManager().getVfxCurrentFrame();

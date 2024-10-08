@@ -5,8 +5,11 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.maps.MapObject;
+import com.badlogic.gdx.maps.objects.PolygonMapObject;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
@@ -20,12 +23,15 @@ import com.badlogic.gdx.physics.box2d.Fixture;
 import com.badlogic.gdx.physics.box2d.Manifold;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import config.GameScreen;
 import config.Storage;
 import managers.TileMapHelper;
+import objects.Coin;
 import objects.GameEntity;
 import objects.attacks.ArcherAttacks;
 import objects.attacks.MeleeAttacks;
@@ -37,8 +43,8 @@ import objects.player.PlayerMage;
 import objects.player.PlayerMelee;
 
 public class GameProj implements Screen, ContactListener {
-    private Viewport vp;
-    private OrthographicCamera camera;
+    private Viewport vp, hudViewport;
+    private OrthographicCamera camera, hudCamera;
     public Stage stage;
     private World world;
     private final float TIME_STEP = 1/60f;
@@ -54,11 +60,14 @@ public class GameProj implements Screen, ContactListener {
     private Mlem mlem, mlem2;
     private Peepee peepee, peepee2, peepee3, peepee4;
     private GameScreen gameScreen;
+    private boolean changeCharCollision, adventureCollision;
+    private Label coinLabel;
+    private Texture coinTex;
     
     public GameProj(Viewport viewport, Game game, GameScreen gameScreen) {
     	this.gameScreen = gameScreen;
         this.vp = viewport;
-        stage = new Stage(viewport);
+        stage = new Stage();
         this.world = new World(new Vector2(0, -9.81f), true);
         Gdx.input.setInputProcessor(stage);
         storage = Storage.getInstance();
@@ -70,35 +79,136 @@ public class GameProj implements Screen, ContactListener {
         this.box2DDebugRenderer = new Box2DDebugRenderer();
         world.setContactListener(this);
 
+        hudCamera = new OrthographicCamera();
+        hudViewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), hudCamera);
+        hudCamera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera = (OrthographicCamera) vp.getCamera();
         camera.setToOrtho(false, viewport.getWorldWidth(), viewport.getWorldHeight());
+    
+        coinTex = Storage.assetManager.get("items/CoinHUD.png", Texture.class);
+        coinLabel = new Label("x", storage.labelStyle);
+        coinLabel.setFontScale(0.8f);
+        coinLabel.setPosition(55, Gdx.graphics.getHeight() - 52);
+        stage.addActor(coinLabel);
     }
     
     private void cameraUpdate() {
-		Vector3 position = camera.position;
-		if(Storage.getPlayerChar() == 1) {
-			position.x = Math.round(playerMelee.getBody().getPosition().x * 100.0f * 10) / 10f;
-	    	position.y = Math.round(playerMelee.getBody().getPosition().y * 100.0f * 10) / 10f;
-	    }
-	    else if(Storage.getPlayerChar() == 1) {
-	    	position.x = Math.round(playerMage.getBody().getPosition().x * 100.0f * 10) / 10f;
-	    	position.y = Math.round(playerMage.getBody().getPosition().y * 100.0f * 10) / 10f;
-	    } 
-	    else {
-	    	position.x = Math.round(playerArcher.getBody().getPosition().x * 100.0f * 10) / 10f;
-	    	position.y = Math.round(playerArcher.getBody().getPosition().y * 100.0f * 10) / 10f;
-	    }
-		
-		camera.zoom = 0.9f;
-    	camera.position.set(position);   	
-        camera.update(); 
+        Vector3 position = camera.position;
+
+        float playerX = 0, playerY = 0;
+
+        if (Storage.getPlayerChar() == 1) {
+            playerX = playerMelee.getBody().getPosition().x * 100.0f;
+            playerY = playerMelee.getBody().getPosition().y * 100.0f;
+        } else if (Storage.getPlayerChar() == 2) {
+            playerX = playerMage.getBody().getPosition().x * 100.0f;
+            playerY = playerMage.getBody().getPosition().y * 100.0f;
+        } else {
+            playerX = playerArcher.getBody().getPosition().x * 100.0f;
+            playerY = playerArcher.getBody().getPosition().y * 100.0f;
+        }
+
+        int mapWidth = mapHelper.getCurrentMapWidth();
+        int mapHeight = mapHelper.getCurrentMapHeight(); 
+
+        float cameraHalfWidth = camera.viewportWidth * camera.zoom / 2f;
+        float cameraHalfHeight = camera.viewportHeight * camera.zoom / 2f;
+
+        position.x = Math.round(Math.max(cameraHalfWidth, Math.min(playerX, mapWidth - cameraHalfWidth)) * 10) / 10f;
+        position.y = Math.round(Math.max(cameraHalfHeight, Math.min(playerY, mapHeight - cameraHalfHeight)) * 10) / 10f;
+
+        camera.zoom = 0.8f;
+        camera.position.set(position);
+        camera.update();
     }
+
     
     private void renderGameOver() {
     	
 //    	gameScreen.switchToNewState(GameScreen.START);
     }
+    
+    private void drawInteractablePolygons() {
+    	if (changeCharCollision) {
+            shapeRenderer.setProjectionMatrix(camera.combined);
+            Gdx.gl.glLineWidth(3.0f);
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+            shapeRenderer.setColor(1, 1, 0, 1);
 
+            MapObject changeCharObject = mapHelper.getMapObjectByName("changeChar");
+            if (changeCharObject instanceof PolygonMapObject) {
+                float[] vertices = ((PolygonMapObject) changeCharObject).getPolygon().getTransformedVertices();
+                for (int i = 0; i < vertices.length; i += 2) {
+                    shapeRenderer.line(vertices[i], vertices[i + 1], vertices[(i + 2) % vertices.length], vertices[(i + 3) % vertices.length]);
+                }
+            }
+            shapeRenderer.end();
+            
+            Gdx.gl.glLineWidth(1.0f);
+
+            batch.begin();
+            storage.font.setColor(1, 1, 0, 1);
+
+            if (changeCharObject instanceof PolygonMapObject) {
+                PolygonMapObject polygon = (PolygonMapObject) changeCharObject;
+                float[] vertices = polygon.getPolygon().getTransformedVertices();
+                
+                float centerX = 0;
+                float centerY = 0;
+                for (int i = 0; i < vertices.length; i += 2) {
+                    centerX += vertices[i];
+                    centerY += vertices[i + 1];
+                }
+                centerX /= (vertices.length / 2);
+                centerY /= (vertices.length / 2);
+
+                storage.font.getData().setScale(0.6f);
+                storage.font.draw(batch, "Press E to change \ncharacter", centerX - 100, centerY + 120, 200f, 1, true);
+            }
+            batch.end();
+        }
+        
+        if (adventureCollision) {
+            shapeRenderer.setProjectionMatrix(camera.combined);
+            Gdx.gl.glLineWidth(3.0f);
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
+            shapeRenderer.setColor(1, 1, 0, 1);
+
+            MapObject adventureObject = mapHelper.getMapObjectByName("adventure");
+            if (adventureObject instanceof PolygonMapObject) {
+                float[] vertices = ((PolygonMapObject) adventureObject).getPolygon().getTransformedVertices();
+                for (int i = 0; i < vertices.length; i += 2) {
+                    shapeRenderer.line(vertices[i], vertices[i + 1], vertices[(i + 2) % vertices.length], vertices[(i + 3) % vertices.length]);
+                }
+            }
+            shapeRenderer.end();
+            
+            Gdx.gl.glLineWidth(1.0f);
+            
+            batch.begin();
+            storage.font.setColor(1, 1, 0, 1);
+
+            if (adventureObject instanceof PolygonMapObject) {
+                PolygonMapObject polygon = (PolygonMapObject) adventureObject;
+                float[] vertices = polygon.getPolygon().getTransformedVertices();
+                
+                float centerX = 0;
+                float centerY = 0;
+                for (int i = 0; i < vertices.length; i += 2) {
+                    centerX += vertices[i];
+                    centerY += vertices[i + 1];
+                }
+                centerX /= (vertices.length / 2);
+                centerY /= (vertices.length / 2);
+
+                storage.font.getData().setScale(0.6f);
+                storage.font.draw(batch, "Press E to interact", centerX - 100, centerY + 60);
+            }
+            batch.end();
+        }
+        
+        storage.font.setColor(1, 1, 1, 1);
+    }
 
     @Override
     public void render(float delta) { 
@@ -119,10 +229,21 @@ public class GameProj implements Screen, ContactListener {
         cameraUpdate();
         
         world.step(TIME_STEP, 6, 2);                
-        
+              
         mapRenderer.setView(camera);
-        mapRenderer.render();       
+        mapRenderer.render();  
         
+        for (Coin coin : mapHelper.getCoins()) {
+            coin.update(delta);
+            coin.render(batch);
+        }
+        
+        coinLabel.setText("x" + Storage.getPlayerCoins());
+        batch.setProjectionMatrix(hudCamera.combined); // Switch to HUD camera
+        batch.begin();
+        batch.draw(coinTex, 20, Gdx.graphics.getHeight() - 52, 32, 32); // Draw HUD coin icon
+        batch.end();
+                
         if(playerMelee != null)
         	playerMelee.update(delta);
         if(playerMage != null)
@@ -142,7 +263,8 @@ public class GameProj implements Screen, ContactListener {
         if(mlem2 != null)
         	mlem2.update(delta);
         
-        checkForBodyDestruction();
+        checkForBodyDestruction();       
+        drawInteractablePolygons();
         
         batch.setProjectionMatrix(camera.combined);       
         if(peepee != null)
@@ -164,7 +286,12 @@ public class GameProj implements Screen, ContactListener {
         if(playerArcher != null)
         	playerArcher.render(batch);
         
+ 
         box2DDebugRenderer.render(world, camera.combined.scl(100.0f));
+        
+        stage.act(delta);
+        stage.getViewport().apply(); // Ensure stage uses the HUD camera
+        stage.draw(); 
     }
 
     private void checkForBodyDestruction() {
@@ -208,6 +335,8 @@ public class GameProj implements Screen, ContactListener {
 	@Override
     public void resize(int width, int height) {
         vp.update(width, height);
+        hudViewport.update(width, height);
+        hudCamera.setToOrtho(false, width, height);
     }
 
     @Override
@@ -237,6 +366,7 @@ public class GameProj implements Screen, ContactListener {
         mapRenderer.dispose();
         box2DDebugRenderer.dispose();
         world.dispose();
+        stage.dispose();
     }
 
 	public World getWorld() {
@@ -323,9 +453,31 @@ public class GameProj implements Screen, ContactListener {
 	    boolean isEWallsA = "eWall".equals(bodyA.getUserData());
 	    boolean isEWallsB = "eWall".equals(bodyB.getUserData());
 	    
+	    boolean isChangeCharA = "changeChar".equals(bodyA.getUserData());
+	    boolean isChangeCharB = "changeChar".equals(bodyB.getUserData());
+	    
+	    boolean isAdventureA = "adventure".equals(fixtureA.getBody().getUserData());
+	    boolean isAdventureB = "adventure".equals(fixtureB.getBody().getUserData());
+	    
 	    boolean isEnemyA = bodyA.getUserData() instanceof GameEntity && bodyA.getType() == BodyDef.BodyType.DynamicBody;
 	    boolean isEnemyB = bodyB.getUserData() instanceof GameEntity && bodyB.getType() == BodyDef.BodyType.DynamicBody;
 
+	    boolean isCoinA = bodyA.getUserData() instanceof Coin;
+	    boolean isCoinB = bodyB.getUserData() instanceof Coin;
+
+	    if ((isPlayerA && isCoinB) || (isPlayerB && isCoinA)) {
+	        Coin coin = isCoinA ? (Coin) bodyA.getUserData() : (Coin) bodyB.getUserData();
+	        coin.collect();
+	    }
+	    
+	    if((isPlayerA && isChangeCharB) || (isPlayerB && isChangeCharA)) {
+	    	changeCharCollision = true;
+	    }
+	    
+	    if((isPlayerA && isAdventureB) || (isPlayerB && isAdventureA)) {
+	    	adventureCollision = true;
+	    }
+	    
 	    if ((isPlayerA && isLevel2B) || (isPlayerB && isLevel2A)) {
 	        Storage.setLevelNum(2);
 	        gameScreen.switchToNewState(GameScreen.HOME);
@@ -463,8 +615,28 @@ public class GameProj implements Screen, ContactListener {
 	
 	@Override
 	public void endContact(Contact contact) {
-		// TODO Auto-generated method stub
-		
+	    Fixture fixtureA = contact.getFixtureA();
+	    Fixture fixtureB = contact.getFixtureB();
+
+	    Body bodyA = fixtureA.getBody();
+	    Body bodyB = fixtureB.getBody();
+
+	    boolean isPlayerA = bodyA.getUserData() instanceof PlayerMelee || bodyA.getUserData() instanceof PlayerMage || bodyA.getUserData() instanceof PlayerArcher;
+	    boolean isPlayerB = bodyB.getUserData() instanceof PlayerMelee || bodyB.getUserData() instanceof PlayerMage || bodyB.getUserData() instanceof PlayerArcher;
+
+	    boolean isChangeCharA = "changeChar".equals(bodyA.getUserData());
+	    boolean isChangeCharB = "changeChar".equals(bodyB.getUserData());
+	    
+	    boolean isAdventureA = "adventure".equals(fixtureA.getBody().getUserData());
+	    boolean isAdventureB = "adventure".equals(fixtureB.getBody().getUserData());
+
+	    if ((isPlayerA && isChangeCharB) || (isPlayerB && isChangeCharA)) {
+	        changeCharCollision = false;
+	    }
+	    
+	    if ((isPlayerA && isAdventureB) || (isPlayerB && isAdventureA)) {
+	    	adventureCollision = false;
+	    }
 	}
 
 	@Override
@@ -495,10 +667,14 @@ public class GameProj implements Screen, ContactListener {
 	    
 	    boolean isChangeCharA = "changeChar".equals(fixtureA.getBody().getUserData());
 	    boolean isChangeCharB = "changeChar".equals(fixtureB.getBody().getUserData());
+	    
+	    boolean isCoinA = "coin".equals(fixtureA.getBody().getUserData());
+	    boolean isCoinB = "coin".equals(fixtureB.getBody().getUserData());
 	    	 	    
 	    if ((isPlayerA && isEWallsB) || (isPlayerB && isEWallsA) ||
 	    		(isPlayerA && isAdventureB) || (isPlayerB && isAdventureA) ||
-	    		(isPlayerA && isChangeCharB) || (isPlayerB && isChangeCharA)) {
+	    		(isPlayerA && isChangeCharB) || (isPlayerB && isChangeCharA) ||
+	    		(isPlayerA && isCoinB) || (isPlayerB && isCoinA)) {
 	        contact.setEnabled(false);
 	    }
 	    

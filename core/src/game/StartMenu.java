@@ -34,13 +34,11 @@ public class StartMenu implements Screen {
     }
 
     private void createComponents() {
-        // Create buttons
         startButton = new TextButton("Start Game", skin);
         exitButton = new TextButton("Exit Game", skin);
         button1 = new TextButton("Melee boi", skin);
         button2 = new TextButton("Wizardry fool", skin);
 
-        // Add listeners to buttons
         startButton.addListener(new ClickListener() {
             @Override
             public void clicked(com.badlogic.gdx.scenes.scene2d.InputEvent event, float x, float y) {
@@ -69,12 +67,10 @@ public class StartMenu implements Screen {
             }
         });
 
-        // Create table layout for buttons
         Table table = new Table();
         table.setFillParent(true);
         table.center();
 
-        // Add buttons to the table in the desired order
         table.add(button1).padBottom(10).row();
         table.add(button2).padBottom(20).row();
         table.add(startButton).padBottom(20).row();

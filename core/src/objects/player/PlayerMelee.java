@@ -9,6 +9,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.World;
 
+import config.Storage;
 import managers.AnimationManager;
 import managers.AnimationManager.State;
 import objects.GameEntity;
@@ -74,7 +75,10 @@ public class PlayerMelee extends GameEntity {
         if (!death) {
             batch.begin();
             
-            drawHealthBar(batch);
+            if(Storage.getLevelNum() != 0) {
+            	drawHealthBar(batch);
+            }  
+            
             batch.draw(getAnimationManager().getCurrentFrame(), 
                         x - width * 1.25f, y - height / 1.65f,
                         width * 2.5f, height * 1.3f);

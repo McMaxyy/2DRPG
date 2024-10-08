@@ -8,6 +8,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import game.GameProj;
+import game.LoadingScreen;
 import game.StartMenu;
 
 public class GameScreen implements Screen {
@@ -15,6 +16,7 @@ public class GameScreen implements Screen {
     private Viewport viewport;
     private GameProj gameP;
     private StartMenu startMenu;
+    private LoadingScreen loadingScreen;
 
     private static final int MIN_WIDTH = 1280;
     private static final int MIN_HEIGHT = 720;
@@ -22,12 +24,12 @@ public class GameScreen implements Screen {
     public static int SELECTED_HEIGHT = MIN_HEIGHT;
 
     private int currentState;
+    public static final int LOADING = 0;
     public static final int HOME = 1;
     public static final int START = 2;
 
     public GameScreen(Game game) {
         this.game = game;
-        // Initialize viewport with the correct selected dimensions
         viewport = new FitViewport(SELECTED_WIDTH, SELECTED_HEIGHT);
         Gdx.graphics.setUndecorated(false);
         Gdx.graphics.setWindowedMode(1280, 720);
@@ -38,14 +40,18 @@ public class GameScreen implements Screen {
         currentState = newState;
 
         switch (currentState) {
-	        case HOME:
-	            gameP = new GameProj(viewport, game, this);
-	            Gdx.input.setInputProcessor(gameP.stage);
-	            break;
-	        case START:
-	            startMenu = new StartMenu(viewport, game, this);
-	            Gdx.input.setInputProcessor(startMenu.stage);
-	            break;
+        case LOADING:
+        	loadingScreen = new LoadingScreen(viewport, game, this);
+            Gdx.input.setInputProcessor(loadingScreen.stage);
+            break;
+        case HOME:
+            gameP = new GameProj(viewport, game, this);
+            Gdx.input.setInputProcessor(gameP.stage);
+            break;
+        case START:
+            startMenu = new StartMenu(viewport, game, this);
+            Gdx.input.setInputProcessor(startMenu.stage);
+            break;        
         }
     }
     
@@ -72,6 +78,9 @@ public class GameScreen implements Screen {
             case START:
                 startMenu.render(delta);
                 break;
+            case LOADING:
+            	loadingScreen.render(delta);
+                break;  
         }
     }
 
@@ -103,5 +112,6 @@ public class GameScreen implements Screen {
     public void dispose() {
         gameP.dispose();
         startMenu.dispose();
+        loadingScreen.dispose();
     }
 }

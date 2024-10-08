@@ -1,5 +1,7 @@
 package managers;
 
+import java.util.ArrayList;
+
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapObjects;
 import com.badlogic.gdx.maps.objects.PolygonMapObject;
@@ -16,6 +18,7 @@ import com.badlogic.gdx.physics.box2d.Shape;
 
 import config.Storage;
 import game.GameProj;
+import objects.Coin;
 import objects.enemies.Mlem;
 import objects.enemies.Peepee;
 import objects.player.PlayerArcher;
@@ -26,31 +29,91 @@ public class TileMapHelper {
 	private TiledMap map0, map1, map2;
 	private GameProj gameP;
 	private static final float PPM = 100.0f;
+    private ArrayList<Coin> coins;
 	
 	public TileMapHelper(GameProj gameP) {
 		this.gameP = gameP;
+		this.coins = new ArrayList<Coin>();
 	}
+	
+	public MapObject getMapObjectByName(String objectName) {
+        MapObjects objects = null;
+        if (map0 != null) {
+        	switch(objectName) {
+        	case "changeChar":
+        		objects = map0.getLayers().get("ChangeChar").getObjects();
+        		break;
+        	case "adventure":
+        		objects = map0.getLayers().get("Adventure").getObjects();
+        		break;
+        	}          
+        }
+
+        if (objects != null) {
+            for (MapObject object : objects) {
+                if (object.getName() != null && object.getName().equals(objectName)) {
+                    return object;
+                }
+            }
+        }
+        return null;
+    }
+	
+	public int getCurrentMapWidth() {
+        TiledMap map = getCurrentMap();
+        int tileWidth = map.getProperties().get("tilewidth", Integer.class);
+        int mapWidth = map.getProperties().get("width", Integer.class);
+        return tileWidth * mapWidth;
+    }
+
+    public int getCurrentMapHeight() {
+        TiledMap map = getCurrentMap();
+        int tileHeight = map.getProperties().get("tileheight", Integer.class);
+        int mapHeight = map.getProperties().get("height", Integer.class);
+        return tileHeight * mapHeight;
+    }
+
+    private TiledMap getCurrentMap() {
+        if (map0 != null) {
+            return map0;
+        } else if (map1 != null) {
+            return map1;
+        } else {
+            return map2;
+        }
+    }
 	
 	public OrthogonalTiledMapRenderer setupMap(int mapNum) {
 		switch(mapNum) {
 		case 0:
-			map0 = new TmxMapLoader().load("maps/MapVillage.tmx");
-			parseMapObjects(map0.getLayers().get("CollisionLayer").getObjects());
-			parseMapObjects(map0.getLayers().get("Adventure").getObjects());
-			parseMapObjects(map0.getLayers().get("ChangeChar").getObjects());
+			if(map0 == null) {
+				map0 = new TmxMapLoader().load("maps/MapVillage.tmx");
+				parseMapObjects(map0.getLayers().get("CollisionLayer").getObjects());
+				parseMapObjects(map0.getLayers().get("Adventure").getObjects());
+				parseMapObjects(map0.getLayers().get("ChangeChar").getObjects());
+			}
+			
 			return new OrthogonalTiledMapRenderer(map0);
+			
 		case 1:
-			map1 = new TmxMapLoader().load("maps/Map0.tmx");
-			parseMapObjects(map1.getLayers().get("CollisionLayer").getObjects());
-			parseMapObjects(map1.getLayers().get("Level2").getObjects());
-			parseMapObjects(map1.getLayers().get("EnemyWalls").getObjects());
+			if(map1 == null) {
+				map1 = new TmxMapLoader().load("maps/Map0.tmx");
+				parseMapObjects(map1.getLayers().get("CollisionLayer").getObjects());
+				parseMapObjects(map1.getLayers().get("Level2").getObjects());
+				parseMapObjects(map1.getLayers().get("EnemyWalls").getObjects());
+				parseMapObjects(map1.getLayers().get("Coins").getObjects());
+			}			
+			
 			return new OrthogonalTiledMapRenderer(map1);
 		case 2:
-			map2 = new TmxMapLoader().load("maps/Map1.tmx");
-			parseMapObjects(map2.getLayers().get("CollisionLayer").getObjects());
-			parseMapObjects(map2.getLayers().get("Level1").getObjects());
-			parseMapObjects(map2.getLayers().get("EnemyWalls").getObjects());
-			parseMapObjects(map2.getLayers().get("Death").getObjects());
+			if(map2 == null) {
+				map2 = new TmxMapLoader().load("maps/Map1.tmx");
+				parseMapObjects(map2.getLayers().get("CollisionLayer").getObjects());
+				parseMapObjects(map2.getLayers().get("Level1").getObjects());
+				parseMapObjects(map2.getLayers().get("EnemyWalls").getObjects());
+				parseMapObjects(map2.getLayers().get("Death").getObjects());
+			}
+			
 			return new OrthogonalTiledMapRenderer(map2);
 		default:
 			return new OrthogonalTiledMapRenderer(map1);
@@ -66,6 +129,10 @@ public class TileMapHelper {
 			if(object instanceof RectangleMapObject) {
 				Rectangle rectangle = ((RectangleMapObject) object).getRectangle();
 				String rectangleName = object.getName();
+				
+				if (rectangleName.equals("coin")) {
+	                createCoin(object);
+				}
 				
 				if (rectangleName.equals("player")) {
 				    Body body = BodyHelperService.createBody(
@@ -189,6 +256,26 @@ public class TileMapHelper {
 			}
 		}
 	}
+	
+	public ArrayList<Coin> getCoins() {
+        return coins;
+    }
+	
+	private void createCoin(MapObject object) {
+        Rectangle rectangle = ((RectangleMapObject) object).getRectangle();
+        Body body = BodyHelperService.createBody(
+            rectangle.getX() + rectangle.getWidth() / 2,
+            rectangle.getY() + rectangle.getHeight() / 2,
+            rectangle.getWidth(),
+            rectangle.getHeight(),
+            false,
+            gameP.getWorld()
+        );
+        
+        Coin coin = new Coin(body);
+        body.setUserData(coin);
+        coins.add(coin);
+    }
 	
 	private void createStaticBody(PolygonMapObject polyMapObject) {
 		BodyDef bodyDef = new BodyDef();

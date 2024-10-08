@@ -113,13 +113,15 @@ public class PlayerArcher extends GameEntity {
             
             if(dog.getDogFollower() != null) {
             	batch.draw(getAnimationManager().getDogCurrentFrame(), 
-            			dog.getDogFollower().getPosition().x * 100 - width * -0.2f, 
+            			dog.getDogFollower().getPosition().x * 100 - width * 0.9f, 
             			dog.getDogFollower().getPosition().y * 100 - height / 2f, 
                         width * 1.7f, height * 1.1f);
             }  
             
-            drawHealthBar(batch);
-            drawManaBar(batch);
+            if(Storage.getLevelNum() != 0) {
+            	drawHealthBar(batch);
+                drawManaBar(batch);
+            }  
             
             if (arrow != null) {
                 Texture arrowTex = Storage.assetManager.get("character/Archer/Arrow.png");
@@ -145,7 +147,7 @@ public class PlayerArcher extends GameEntity {
     }
     
     private void updateDogPosition() {
-        float offsetX = getAnimationManager().isFacingRight("PlayerArcher") ? -0.6f : -0.6f;      
+        float offsetX = getAnimationManager().isFacingRight("PlayerArcher") ? 0.4f : -0.4f;      
 
         getAnimationManager().setFacingRight(getAnimationManager().isFacingRight("PlayerArcher"), "DogFollower");
 

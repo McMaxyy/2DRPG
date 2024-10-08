@@ -75,7 +75,7 @@ public class ArcherAttacks extends AttackEntity{
 		BodyDef dogBodyDef = new BodyDef();
 		dogBodyDef.type = BodyDef.BodyType.DynamicBody;
 		
-		float offsetX = getAnimationManager().isFacingRight("PlayerArcher") ? -0.6f : 0.6f;
+		float offsetX = getAnimationManager().isFacingRight("PlayerArcher") ? 0.4f : -0.4f;
 		
 		dogBodyDef.position.set(body.getPosition().x + offsetX, body.getPosition().y);
 		

@@ -22,7 +22,7 @@ public class Storage {
     public BitmapFont font;
     public static AssetManager assetManager = new AssetManager();
     private static boolean newLoad = true; 
-    private static int levelNum = 2, playerChar = 3;
+    private static int levelNum = 1, playerChar = 2, playerCoins = 0;
 
 	public static synchronized Storage getInstance()  {
         if (instance == null) {
@@ -37,9 +37,16 @@ public class Storage {
             newLoad = false;
             loadPlayerAssets();
             loadEnemyAssets();
+            loadItems();
             loadEffects();
         }        
-    }    
+    }  
+    
+    private static void loadItems() {
+    	assetManager.load("items/Coin.png", Texture.class);
+    	assetManager.load("items/Coins.png", Texture.class);
+    	assetManager.load("items/CoinHUD.png", Texture.class);
+    }
     
     private static void loadEffects() {
     	assetManager.load("effects/Lightning.png", Texture.class);
@@ -59,8 +66,6 @@ public class Storage {
     	
     	assetManager.load("enemies/Peepee/Walking.png", Texture.class);
     	assetManager.load("enemies/Peepee/Dying.png", Texture.class);
-
-    	assetManager.finishLoading();
 	}
 
 	public static void loadPlayerAssets() {   
@@ -154,30 +159,32 @@ public class Storage {
 
         // Load pre-generated bitmap font files (.fnt and .png)
         assetManager.load("fonts/Cascadia.fnt", BitmapFont.class);    
-        
-        assetManager.finishLoading();
     }
     
-    public void createFont() {
-        font = assetManager.get("fonts/Cascadia.fnt", BitmapFont.class);
-        
-        Texture borderTextureUp = new Texture(Gdx.files.internal("buttons/newskin/newskin_data/textbutton.9.png"));
-        Texture borderTextureDown = new Texture(Gdx.files.internal("buttons/newskin/newskin_data/textbutton-down.9.png"));
-        
-        NinePatch borderPatchUp = new NinePatch(borderTextureUp, 1, 1, 1, 1);
-        NinePatch borderPatchDown = new NinePatch(borderTextureDown, 1, 1, 1, 1);
-      
-        buttonStyle = new TextButton.TextButtonStyle(skin.get(TextButton.TextButtonStyle.class));
-        buttonStyle.up = new NinePatchDrawable(borderPatchUp);
-        buttonStyle.down = new NinePatchDrawable(borderPatchDown);
-        buttonStyle.font = font;
-        
-        labelStyle = new Label.LabelStyle(skin.get(Label.LabelStyle.class));
-        labelStyle.font = font;  
-        
-        textStyle = new TextField.TextFieldStyle(skin.get(TextField.TextFieldStyle.class));
-        textStyle.font = font;  
-    }
+	public void createFont() {
+	    if (assetManager.isLoaded("fonts/Cascadia.fnt", BitmapFont.class)) {
+	        font = assetManager.get("fonts/Cascadia.fnt", BitmapFont.class);
+
+	        Texture borderTextureUp = new Texture(Gdx.files.internal("buttons/newskin/newskin_data/textbutton.9.png"));
+	        Texture borderTextureDown = new Texture(Gdx.files.internal("buttons/newskin/newskin_data/textbutton-down.9.png"));
+
+	        NinePatch borderPatchUp = new NinePatch(borderTextureUp, 1, 1, 1, 1);
+	        NinePatch borderPatchDown = new NinePatch(borderTextureDown, 1, 1, 1, 1);
+
+	        buttonStyle = new TextButton.TextButtonStyle(skin.get(TextButton.TextButtonStyle.class));
+	        buttonStyle.up = new NinePatchDrawable(borderPatchUp);
+	        buttonStyle.down = new NinePatchDrawable(borderPatchDown);
+	        buttonStyle.font = font;
+
+	        labelStyle = new Label.LabelStyle(skin.get(Label.LabelStyle.class));
+	        labelStyle.font = font;
+
+	        textStyle = new TextField.TextFieldStyle(skin.get(TextField.TextFieldStyle.class));
+	        textStyle.font = font;
+	    } else {
+	        Gdx.app.log("Storage", "Font 'fonts/Cascadia.fnt' not loaded yet!");
+	    }
+	}
     
     public BitmapFont getFont() {
     	return font;
@@ -197,5 +204,13 @@ public class Storage {
 	
 	public static void setPlayerChar(int playerChar) {
 		Storage.playerChar = playerChar;
+	}
+
+	public static int getPlayerCoins() {
+		return playerCoins;
+	}
+
+	public static void setPlayerCoins(int playerCoins) {
+		Storage.playerCoins = playerCoins;
 	}
 }
