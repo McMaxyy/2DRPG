@@ -125,7 +125,7 @@ public class SpellAttacks extends AttackEntity{
     public void removeSpell() {
         if (spellBody != null) {
             world.destroyBody(spellBody);
-            spellBody = null;
+            spellBody = null;           
         }
     }
 

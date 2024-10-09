@@ -19,6 +19,7 @@ import com.badlogic.gdx.physics.box2d.Shape;
 import config.Storage;
 import game.GameProj;
 import objects.Coin;
+import objects.enemies.BoarBoss;
 import objects.enemies.Mlem;
 import objects.enemies.Peepee;
 import objects.player.PlayerArcher;
@@ -26,7 +27,7 @@ import objects.player.PlayerMage;
 import objects.player.PlayerMelee;
 
 public class TileMapHelper {
-	private TiledMap map0, map1, map2;
+	private TiledMap map0, map1, map2, mapBoss1;
 	private GameProj gameP;
 	private static final float PPM = 100.0f;
     private ArrayList<Coin> coins;
@@ -78,9 +79,10 @@ public class TileMapHelper {
             return map0;
         } else if (map1 != null) {
             return map1;
-        } else {
+        } else if (map2 != null){
             return map2;
-        }
+        } else
+        	return mapBoss1;
     }
 	
 	public OrthogonalTiledMapRenderer setupMap(int mapNum) {
@@ -91,10 +93,8 @@ public class TileMapHelper {
 				parseMapObjects(map0.getLayers().get("CollisionLayer").getObjects());
 				parseMapObjects(map0.getLayers().get("Adventure").getObjects());
 				parseMapObjects(map0.getLayers().get("ChangeChar").getObjects());
-			}
-			
-			return new OrthogonalTiledMapRenderer(map0);
-			
+			}			
+			return new OrthogonalTiledMapRenderer(map0);			
 		case 1:
 			if(map1 == null) {
 				map1 = new TmxMapLoader().load("maps/Map0.tmx");
@@ -102,8 +102,7 @@ public class TileMapHelper {
 				parseMapObjects(map1.getLayers().get("Level2").getObjects());
 				parseMapObjects(map1.getLayers().get("EnemyWalls").getObjects());
 				parseMapObjects(map1.getLayers().get("Coins").getObjects());
-			}			
-			
+			}						
 			return new OrthogonalTiledMapRenderer(map1);
 		case 2:
 			if(map2 == null) {
@@ -112,9 +111,17 @@ public class TileMapHelper {
 				parseMapObjects(map2.getLayers().get("Level1").getObjects());
 				parseMapObjects(map2.getLayers().get("EnemyWalls").getObjects());
 				parseMapObjects(map2.getLayers().get("Death").getObjects());
-			}
-			
+				parseMapObjects(map2.getLayers().get("Coins").getObjects());
+			}			
 			return new OrthogonalTiledMapRenderer(map2);
+		case 3:
+			if(mapBoss1 == null) {
+				mapBoss1 = new TmxMapLoader().load("maps/MapBoss1.tmx");
+				parseMapObjects(mapBoss1.getLayers().get("CollisionLayer").getObjects());
+				parseMapObjects(mapBoss1.getLayers().get("EnemyWalls").getObjects());
+				parseMapObjects(mapBoss1.getLayers().get("Death").getObjects());
+			}			
+			return new OrthogonalTiledMapRenderer(mapBoss1);
 		default:
 			return new OrthogonalTiledMapRenderer(map1);
 		}
@@ -252,6 +259,20 @@ public class TileMapHelper {
 				    body.setUserData(mlem);
 
 				    gameP.setMlem2(mlem);
+				}
+				
+				if (rectangleName.equals("boarBoss")) {
+				    Body body = BodyHelperService.createBody(
+				        rectangle.getX() + rectangle.getWidth() / 2,
+				        rectangle.getY() + rectangle.getHeight() / 2,
+				        rectangle.getWidth(),
+				        rectangle.getHeight(),
+				        false,
+				        gameP.getWorld());
+
+				    BoarBoss boar = new BoarBoss(rectangle.getWidth(), rectangle.getHeight(), body, gameP.getWorld());
+				    body.setUserData(boar);
+				    gameP.setBoarBoss(boar);
 				}
 			}
 		}

@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.physics.box2d.Body;
 
+import config.GameScreen;
 import config.Storage;
 import objects.player.PlayerMage;
 
@@ -21,6 +22,7 @@ public abstract class GameEntity {
     private float stopDuration = 0.5f;
     private float stopTimer = 0f;
     private float originalVelX, originalVelY; 
+    private GameScreen gameScreen;
 	
 	public GameEntity(float width, float height, Body body) {
 		this.x = body.getPosition().x;
@@ -61,7 +63,7 @@ public abstract class GameEntity {
     }
 
     protected void onDeath() {
-    	
+        
     }
     
     public int getMana() {

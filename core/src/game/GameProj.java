@@ -36,6 +36,7 @@ import objects.GameEntity;
 import objects.attacks.ArcherAttacks;
 import objects.attacks.MeleeAttacks;
 import objects.attacks.SpellAttacks;
+import objects.enemies.BoarBoss;
 import objects.enemies.Mlem;
 import objects.enemies.Peepee;
 import objects.player.PlayerArcher;
@@ -59,6 +60,7 @@ public class GameProj implements Screen, ContactListener {
     private PlayerArcher playerArcher;
     private Mlem mlem, mlem2;
     private Peepee peepee, peepee2, peepee3, peepee4;
+    private BoarBoss boarBoss;
     private GameScreen gameScreen;
     private boolean changeCharCollision, adventureCollision;
     private Label coinLabel;
@@ -88,7 +90,7 @@ public class GameProj implements Screen, ContactListener {
         coinTex = Storage.assetManager.get("items/CoinHUD.png", Texture.class);
         coinLabel = new Label("x", storage.labelStyle);
         coinLabel.setFontScale(0.8f);
-        coinLabel.setPosition(55, Gdx.graphics.getHeight() - 52);
+        coinLabel.setPosition(55, Gdx.graphics.getHeight() - 48);
         stage.addActor(coinLabel);
     }
     
@@ -124,8 +126,8 @@ public class GameProj implements Screen, ContactListener {
 
     
     private void renderGameOver() {
-    	
-//    	gameScreen.switchToNewState(GameScreen.START);
+    	Storage.setLevelNum(0);
+    	gameScreen.switchToNewState(GameScreen.HOME);
     }
     
     private void drawInteractablePolygons() {
@@ -168,7 +170,7 @@ public class GameProj implements Screen, ContactListener {
             batch.end();
         }
         
-        if (adventureCollision) {
+        if (adventureCollision) { 
             shapeRenderer.setProjectionMatrix(camera.combined);
             Gdx.gl.glLineWidth(3.0f);
             shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
@@ -212,23 +214,28 @@ public class GameProj implements Screen, ContactListener {
 
     @Override
     public void render(float delta) { 
-    	if (PlayerMelee.death) {
+    	if (PlayerMelee.death && !Storage.isPlayerDead()) {
     		playerMelee.checkRespawn(); 
             return;
         }    	
-    	else if (PlayerMage.death) {
+    	else if (PlayerMage.death && !Storage.isPlayerDead()) {
     		playerMage.checkRespawn(); 
             return;
         }
-    	else if (PlayerArcher.death) {
+    	else if (PlayerArcher.death && !Storage.isPlayerDead()) {
     		playerArcher.checkRespawn(); 
             return;
-        }
-
+        } 
+    	
+    	if(Storage.isPlayerDead()) {
+    		Storage.setPlayerDead(false);
+    		renderGameOver();
+    	}
+    	
         ScreenUtils.clear(0.2f, 0.2f, 0.2f, 1);
         cameraUpdate();
         
-        world.step(TIME_STEP, 6, 2);                
+        world.step(TIME_STEP, 6, 2);              
               
         mapRenderer.setView(camera);
         mapRenderer.render();  
@@ -238,10 +245,12 @@ public class GameProj implements Screen, ContactListener {
             coin.render(batch);
         }
         
+        drawInteractablePolygons();
+        
         coinLabel.setText("x" + Storage.getPlayerCoins());
-        batch.setProjectionMatrix(hudCamera.combined); // Switch to HUD camera
+        batch.setProjectionMatrix(hudCamera.combined);
         batch.begin();
-        batch.draw(coinTex, 20, Gdx.graphics.getHeight() - 52, 32, 32); // Draw HUD coin icon
+        batch.draw(coinTex, 20, Gdx.graphics.getHeight() - 52, 32, 32);
         batch.end();
                 
         if(playerMelee != null)
@@ -262,9 +271,10 @@ public class GameProj implements Screen, ContactListener {
         	mlem.update(delta);
         if(mlem2 != null)
         	mlem2.update(delta);
+        if(boarBoss != null)
+        	boarBoss.update(delta);
         
         checkForBodyDestruction();       
-        drawInteractablePolygons();
         
         batch.setProjectionMatrix(camera.combined);       
         if(peepee != null)
@@ -285,18 +295,25 @@ public class GameProj implements Screen, ContactListener {
         	playerMage.render(batch);
         if(playerArcher != null)
         	playerArcher.render(batch);
+        if(boarBoss != null)
+        	boarBoss.render(batch);
         
  
         box2DDebugRenderer.render(world, camera.combined.scl(100.0f));
         
         stage.act(delta);
-        stage.getViewport().apply(); // Ensure stage uses the HUD camera
+        stage.getViewport().apply();
         stage.draw(); 
     }
 
     private void checkForBodyDestruction() {
     	boolean bodyDestroyed = false;   		
     	
+    	if (boarBoss != null && boarBoss.shouldDestroy) {
+    		bodyDestroyed = true;
+            world.destroyBody(boarBoss.getBody());
+            boarBoss = null;           
+        }
     	if (peepee != null && peepee.shouldDestroy) {
     		bodyDestroyed = true;
             world.destroyBody(peepee.getBody());
@@ -409,6 +426,10 @@ public class GameProj implements Screen, ContactListener {
 		this.mlem2 = mlem;
 	}
 	
+	public void setBoarBoss(BoarBoss boar) {
+		this.boarBoss = boar;
+	}
+	
 	public SpriteBatch getBatch() {
 		return batch;
 	}
@@ -428,6 +449,9 @@ public class GameProj implements Screen, ContactListener {
 
 	    boolean isPeepeeA = bodyA.getUserData() instanceof Peepee;
 	    boolean isPeepeeB = bodyB.getUserData() instanceof Peepee;
+	    
+	    boolean isBoarBossA = bodyA.getUserData() instanceof BoarBoss;
+	    boolean isBoarBossB = bodyB.getUserData() instanceof BoarBoss;
 	    
 	    if (Storage.getPlayerChar() == 1) {
 	        isPlayerA = bodyA.getUserData() instanceof PlayerMelee;
@@ -484,7 +508,7 @@ public class GameProj implements Screen, ContactListener {
 	    }
 
 	    if ((isPlayerA && isLevel1B) || (isPlayerB && isLevel1A)) {
-	        Storage.setLevelNum(0);
+	        Storage.setLevelNum(3);
 	        gameScreen.switchToNewState(GameScreen.HOME);
 	    }
 
@@ -503,6 +527,28 @@ public class GameProj implements Screen, ContactListener {
 	        ((Peepee) bodyA.getUserData()).reverseDirection();
 	    } else if (isPeepeeB && !isPlayerA && isEWallsA) {
 	        ((Peepee) bodyB.getUserData()).reverseDirection();
+	    }
+	    
+	    if (((isBoarBossA && isPlayerB) || (isBoarBossB && isPlayerA)) && Storage.getPlayerChar() == 1) {
+	        if (boarBoss != null && !boarBoss.death && boarBoss.getProjectile()) {
+	            PlayerMelee player = isPlayerA ? (PlayerMelee) bodyA.getUserData() : (PlayerMelee) bodyB.getUserData();
+	            if(!player.isInvulnerable()) {
+	            	player.takeDamage(40);
+	            	player.die();
+	            }
+	        }
+	    } else if (((isBoarBossA && isPlayerB) || (isBoarBossB && isPlayerA)) && Storage.getPlayerChar() == 2) {
+	        if (boarBoss != null && !boarBoss.death && boarBoss.getProjectile()) {
+	            PlayerMage player = isPlayerA ? (PlayerMage) bodyA.getUserData() : (PlayerMage) bodyB.getUserData();
+	            player.takeDamage(40);
+	            player.die();
+	        }
+	    } else if (((isBoarBossA && isPlayerB) || (isBoarBossB && isPlayerA)) && Storage.getPlayerChar() == 3) {
+	        if (boarBoss != null && !boarBoss.death && boarBoss.getProjectile()) {
+	        	PlayerArcher player = isPlayerA ? (PlayerArcher) bodyA.getUserData() : (PlayerArcher) bodyB.getUserData();
+	            player.takeDamage(40);
+	            player.die();
+	        }
 	    }
 
 	    if (((isPeepeeA && isPlayerB) || (isPeepeeB && isPlayerA)) && Storage.getPlayerChar() == 1) {
@@ -534,6 +580,12 @@ public class GameProj implements Screen, ContactListener {
 	            player.die();
 	        }
 	    } 
+	    
+	    if (isBoarBossA && !isPlayerB && isEWallsB) {
+	        ((BoarBoss) bodyA.getUserData()).reverseDirection();
+	    } else if (isBoarBossB && !isPlayerA && isEWallsA) {
+	        ((BoarBoss) bodyB.getUserData()).reverseDirection();
+	    }
 
 	    if (isMlemA && !isPlayerB && isEWallsB) {
 	        ((Mlem) bodyA.getUserData()).reverseDirection();
@@ -567,6 +619,25 @@ public class GameProj implements Screen, ContactListener {
 	    
 	    boolean isArrowA = bodyA.getUserData() instanceof ArcherAttacks;
 	    boolean isArrowB = bodyB.getUserData() instanceof ArcherAttacks;
+	    
+	    boolean isProjectileA = bodyA.getUserData() instanceof BoarBoss;
+	    boolean isProjectileB = bodyB.getUserData() instanceof BoarBoss;
+	    
+	    if (((isPlayerA && isProjectileB) || (isPlayerB && isProjectileA)) && Storage.getPlayerChar() == 1 && !boarBoss.death) {
+	        PlayerMelee player = isPlayerA ? (PlayerMelee) bodyA.getUserData() : (PlayerMelee) bodyB.getUserData();
+	        if(!player.isInvulnerable()) {
+            	player.takeDamage(10);
+            }
+	        boarBoss.markForRemoval();
+	    } else if (((isPlayerA && isProjectileB) || (isPlayerB && isProjectileA)) && Storage.getPlayerChar() == 2 && !boarBoss.death) {
+	        PlayerMage player = isPlayerA ? (PlayerMage) bodyA.getUserData() : (PlayerMage) bodyB.getUserData();
+	        player.takeDamage(10);
+	        boarBoss.markForRemoval();
+	    } else if (((isPlayerA && isProjectileB) || (isPlayerB && isProjectileA)) && Storage.getPlayerChar() == 3 && !boarBoss.death) {
+	    	PlayerArcher player = isPlayerA ? (PlayerArcher) bodyA.getUserData() : (PlayerArcher) bodyB.getUserData();
+	    	player.takeDamage(10);
+	    	boarBoss.markForRemoval();
+	    }
 
 	    if ((isSpellA && isEnemyB && !isPlayerB) || (isSpellB && isEnemyA && !isPlayerA)) {
 	        SpellAttacks spell = isSpellA ? (SpellAttacks) bodyA.getUserData() : (SpellAttacks) bodyB.getUserData();
@@ -644,6 +715,9 @@ public class GameProj implements Screen, ContactListener {
 	    Fixture fixtureA = contact.getFixtureA();
 	    Fixture fixtureB = contact.getFixtureB();
 	    
+	    Body bodyA = fixtureA.getBody();
+	    Body bodyB = fixtureB.getBody();
+	    
 	    boolean isPlayerA, isPlayerB;
 	    
 	    if(Storage.getPlayerChar() == 1) {
@@ -659,6 +733,15 @@ public class GameProj implements Screen, ContactListener {
 		    isPlayerB = fixtureB.getBody().getUserData() instanceof PlayerArcher;
 	    }	
 	    
+	    boolean isMlemA = bodyA.getUserData() instanceof Mlem;
+	    boolean isMlemB = bodyB.getUserData() instanceof Mlem;
+
+	    boolean isPeepeeA = bodyA.getUserData() instanceof Peepee;
+	    boolean isPeepeeB = bodyB.getUserData() instanceof Peepee;
+	    
+	    boolean isCoinA = bodyA.getUserData() instanceof Coin;
+	    boolean isCoinB = bodyB.getUserData() instanceof Coin;
+	    
 	    boolean isEWallsA = "eWall".equals(fixtureA.getBody().getUserData());
 	    boolean isEWallsB = "eWall".equals(fixtureB.getBody().getUserData());
 	    
@@ -667,14 +750,15 @@ public class GameProj implements Screen, ContactListener {
 	    
 	    boolean isChangeCharA = "changeChar".equals(fixtureA.getBody().getUserData());
 	    boolean isChangeCharB = "changeChar".equals(fixtureB.getBody().getUserData());
-	    
-	    boolean isCoinA = "coin".equals(fixtureA.getBody().getUserData());
-	    boolean isCoinB = "coin".equals(fixtureB.getBody().getUserData());
 	    	 	    
 	    if ((isPlayerA && isEWallsB) || (isPlayerB && isEWallsA) ||
 	    		(isPlayerA && isAdventureB) || (isPlayerB && isAdventureA) ||
-	    		(isPlayerA && isChangeCharB) || (isPlayerB && isChangeCharA) ||
-	    		(isPlayerA && isCoinB) || (isPlayerB && isCoinA)) {
+	    		(isPlayerA && isChangeCharB) || (isPlayerB && isChangeCharA)) {
+	        contact.setEnabled(false);
+	    }
+	    
+	    if ((isMlemA && isCoinB) || (isMlemB && isCoinA) ||
+	    		(isPeepeeA && isCoinB) || (isPeepeeB && isCoinA)) {
 	        contact.setEnabled(false);
 	    }
 	    

@@ -16,7 +16,6 @@ public class Peepee extends GameEntity {
     private AnimationManager animationManager;
     private boolean isDead;
     public boolean death = false;
-    public boolean colliding = true;
     private float initialX, initialY;
     private float deathTimer = 0f;
     private final float RESPAWN_DELAY = 2f;

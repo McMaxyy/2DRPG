@@ -37,7 +37,7 @@ public class PlayerMage extends GameEntity {
         this.initialX = initialX;
         this.initialY = initialY;
         this.world = world;
-        setHealth(100, 100);
+        setHealth(300, 300);
         setMana(mana, maxMana);
     }
     
@@ -54,7 +54,7 @@ public class PlayerMage extends GameEntity {
     
     @Override
     protected void onDeath() {
-        die();        
+        Storage.setPlayerDead(true);     
     }
     
     public void resetMana() {
@@ -142,17 +142,17 @@ public class PlayerMage extends GameEntity {
             }
             
             if (Gdx.input.justTouched() && Gdx.input.isButtonPressed(Input.Buttons.RIGHT) && spell == null && this.getMana() >= SpellAttacks.getSpellCost("Fireball")) {
+            	getAnimationManager().setState(State.ATTACKING, "Pedro");                           
+                castLightning();
+                this.loseMana(SpellAttacks.getSpellCost("Lightning"));
+                getAnimationManager().setState(vfxState.LIGHTNING);
+            }
+
+            if (Gdx.input.justTouched() && Gdx.input.isButtonPressed(Input.Buttons.LEFT) && spell == null && this.getMana() >= SpellAttacks.getSpellCost("Lightning")) {                
                 getAnimationManager().setState(State.ATTACKING, "Pedro");
                 castFireball();   
                 this.loseMana(SpellAttacks.getSpellCost("Fireball"));
                 getAnimationManager().setState(vfxState.FIREBALL);
-            }
-
-            if (Gdx.input.justTouched() && Gdx.input.isButtonPressed(Input.Buttons.LEFT) && spell == null && this.getMana() >= SpellAttacks.getSpellCost("Lightning")) {
-                getAnimationManager().setState(State.ATTACKING, "Pedro");                           
-                castLightning();
-                this.loseMana(SpellAttacks.getSpellCost("Lightning"));
-                getAnimationManager().setState(vfxState.LIGHTNING);
             }
 
             if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE) && jumpCounter < 2) {
@@ -257,8 +257,7 @@ public class PlayerMage extends GameEntity {
                 spell.removeSpell();
                 spell = null;
             }
-            
-            setHealth(100, 100);
+
             setMana(50, 50);
         }
     }

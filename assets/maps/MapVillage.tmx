@@ -97,11 +97,11 @@
   <object id="2" x="1588.33" y="864">
    <polygon points="0,0 331.667,0 331.667,144 0,144"/>
   </object>
-  <object id="3" x="0" y="0">
-   <polygon points="0,0 0,1200 -48,1200 -48,0"/>
+  <object id="3" x="3.33333" y="0">
+   <polygon points="0,0 0,1200 -3.33333,1200 -3.33333,0"/>
   </object>
-  <object id="4" x="1920" y="1200">
-   <polygon points="0,0 0,-1200 48,-1200 48,0"/>
+  <object id="4" x="1915.5" y="1200">
+   <polygon points="0,0 0,-1200 4.5,-1200 4.5,0"/>
   </object>
   <object id="5" name="player" x="1392" y="911.212" width="48" height="73.3333"/>
  </objectgroup>

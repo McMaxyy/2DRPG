@@ -33,6 +33,12 @@ public class AnimationManager {
     private Animation<TextureRegion> dogJumpingAnimation;
     private Animation<TextureRegion> dogAttackingAnimation;
     private Animation<TextureRegion> dogDyingAnimation;
+    private Animation<TextureRegion> boarBossIdleAnimation;
+    private Animation<TextureRegion> boarBossRunningAnimation;
+    private Animation<TextureRegion> boarBossHurtAnimation;
+    private Animation<TextureRegion> boarBossAttackingChargeAnimation;
+    private Animation<TextureRegion> boarBossAttackingThrowAnimation;
+    private Animation<TextureRegion> boarBossDyingAnimation;
 
     private float animationTime = 0f;
     private float pedroAnimationTime = 0f;
@@ -41,10 +47,11 @@ public class AnimationManager {
     private float vfxAnimationTime = 0f;
     private float archerAnimationTime = 0f;
     private float dogAnimationTime = 0f;
+    private float boarBossAnimationTime = 0f;
     private boolean facingRight, pedroFacingRight, mlemFacingRight, peepeeFacingRight, 
-    archerFacingRight, dogFacingRight;   
+    archerFacingRight, dogFacingRight, boarBossFacingRight;   
     public enum State {
-        IDLE, RUNNING, JUMPING, ATTACKING, DYING
+        IDLE, RUNNING, JUMPING, ATTACKING, DYING, HURT, ATTACK_CHARGE, ATTACK_THROW
     }
     public enum vfxState {
     	NULL, LIGHTNING, FIREBALL
@@ -55,6 +62,7 @@ public class AnimationManager {
     private State peepeeCurrentState = State.RUNNING;
     private State archerCurrentState = State.IDLE;
     private State dogCurrentState = State.IDLE;
+    private State boarBossCurrentState = State.IDLE;
     private vfxState vfxCurrentState = vfxState.NULL;
 
     public AnimationManager() {
@@ -165,6 +173,66 @@ public class AnimationManager {
             }
             peepeeDyingAnimation = new Animation<>(0.07f, peepeeDyingFrame, Animation.PlayMode.NORMAL);
 
+            // Boar Boss running
+    		Texture boarBossRunningTex = Storage.assetManager.get("enemies/BoarBoss/Walking.png", Texture.class);
+    		boarBossRunningTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);           
+            TextureRegion[][] boarBossRunningFrames = TextureRegion.split(boarBossRunningTex, boarBossRunningTex.getWidth() / 6, boarBossRunningTex.getHeight());
+            Array<TextureRegion> boarBossRunningFrame = new Array<>();
+            for (int i = 0; i < 6; i++) {
+            	boarBossRunningFrame.add(boarBossRunningFrames[0][i]);
+            }
+            boarBossRunningAnimation = new Animation<>(0.08f, boarBossRunningFrame, Animation.PlayMode.LOOP);
+            
+            // Boar Boss dying
+            Texture boarBossDyingTex = Storage.assetManager.get("enemies/BoarBoss/Dying.png", Texture.class);
+            boarBossDyingTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);           
+            TextureRegion[][] boarBossDyingFrames = TextureRegion.split(boarBossDyingTex, boarBossDyingTex.getWidth() / 4, boarBossDyingTex.getHeight());
+            Array<TextureRegion> boarBossDyingFrame = new Array<>();
+            for (int i = 0; i < 4; i++) {
+            	boarBossDyingFrame.add(boarBossDyingFrames[0][i]);
+            }
+            boarBossDyingAnimation = new Animation<>(0.1f, boarBossDyingFrame, Animation.PlayMode.NORMAL);
+
+            // Boar Boss attacking charge
+            Texture boarBossAttackingTex = Storage.assetManager.get("enemies/BoarBoss/AttackCharge.png", Texture.class);
+            boarBossAttackingTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);           
+            TextureRegion[][] boarBossAttackFrames = TextureRegion.split(boarBossAttackingTex, boarBossAttackingTex.getWidth() / 6, boarBossAttackingTex.getHeight());
+            Array<TextureRegion> boarBossAttackingFrame = new Array<>();
+            for (int i = 0; i < 6; i++) {
+            	boarBossAttackingFrame.add(boarBossAttackFrames[0][i]);
+            }
+            boarBossAttackingChargeAnimation = new Animation<>(0.075f, boarBossAttackingFrame, Animation.PlayMode.NORMAL);
+            
+            // Boar Boss idle
+            Texture boarBossIdleTex = Storage.assetManager.get("enemies/BoarBoss/Idle.png", Texture.class);
+            boarBossIdleTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);           
+            TextureRegion[][] boarBossIdleFrames = TextureRegion.split(boarBossIdleTex, boarBossIdleTex.getWidth() / 4, boarBossAttackingTex.getHeight());
+            Array<TextureRegion> boarBossIdleFrame = new Array<>();
+            for (int i = 0; i < 4; i++) {
+            	boarBossIdleFrame.add(boarBossIdleFrames[0][i]);
+            }
+            boarBossIdleAnimation = new Animation<>(0.1f, boarBossIdleFrame, Animation.PlayMode.LOOP);
+            
+            // Boar Boss attacking throw
+            Texture boarBossAttack2Tex = Storage.assetManager.get("enemies/BoarBoss/AttackThrow.png", Texture.class);
+            boarBossAttack2Tex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);           
+            TextureRegion[][] boarBossAttack2Frames = TextureRegion.split(boarBossAttack2Tex, boarBossAttack2Tex.getWidth() / 4, boarBossAttack2Tex.getHeight());
+            Array<TextureRegion> boarBossAttack2Frame = new Array<>();
+            for (int i = 0; i < 4; i++) {
+            	boarBossAttack2Frame.add(boarBossAttack2Frames[0][i]);
+            }
+            boarBossAttackingThrowAnimation = new Animation<>(0.075f, boarBossAttackingFrame, Animation.PlayMode.NORMAL);
+            
+            // Boar Boss hurt
+            Texture boarBossHurtTex = Storage.assetManager.get("enemies/BoarBoss/Hurt.png", Texture.class);
+            boarBossHurtTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);           
+            TextureRegion[][] boarBossHurtFrames = TextureRegion.split(boarBossHurtTex, boarBossHurtTex.getWidth() / 4, boarBossAttackingTex.getHeight());
+            Array<TextureRegion> boarBossHurtFrame = new Array<>();
+            for (int i = 0; i < 4; i++) {
+            	boarBossHurtFrame.add(boarBossHurtFrames[0][i]);
+            }
+            boarBossHurtAnimation = new Animation<>(0.1f, boarBossHurtFrame, Animation.PlayMode.NORMAL);
+            
         } catch (GdxRuntimeException e) {
             System.out.println("Failed to load Pedro animation frames.");
         }		
@@ -314,7 +382,7 @@ public class AnimationManager {
             }
             attackingAnimation = new Animation<>(0.05f, attackingFrames, Animation.PlayMode.NORMAL);
             
-         // Dying	
+            // Dying	
             Array<TextureRegion> dyingFrames = new Array<>();
             for (int i = 0; i < 15; i++) {
                 Texture dyingFrame;
@@ -351,6 +419,7 @@ public class AnimationManager {
         vfxAnimationTime += delta;
         archerAnimationTime += delta;
         dogAnimationTime += delta;
+        boarBossAnimationTime += delta;
     }
 
     public void setFacingRight(boolean isFacingRight, String entity) {
@@ -372,6 +441,9 @@ public class AnimationManager {
     		break;
     	case "DogFollower":
     		this.dogFacingRight = isFacingRight;
+    		break;
+    	case "BoarBoss":
+    		this.boarBossFacingRight = isFacingRight;
     		break;
     	}       
     }
@@ -414,6 +486,12 @@ public class AnimationManager {
                 dogAnimationTime = 0f;
             }
     		break;
+    	case "BoarBoss":
+    		if (newState != boarBossCurrentState) {
+    			boarBossCurrentState = newState;
+                boarBossAnimationTime = 0f;
+            }
+    		break;
     	}
     }
 
@@ -431,6 +509,8 @@ public class AnimationManager {
     		return archerCurrentState;
     	case "DogFollower":
     		return dogCurrentState;
+    	case "BoarBoss":
+    		return boarBossCurrentState;
     	default:
     		return null;
     	}
@@ -577,6 +657,42 @@ public class AnimationManager {
         }
 
         return currentPedroFrame;
+    }
+    
+    public TextureRegion getBoarBossCurrentFrame() {
+        Animation<TextureRegion> currentBoarBossAnimation;
+
+        switch (boarBossCurrentState) {
+        	case DYING:
+        		currentBoarBossAnimation = boarBossDyingAnimation;
+        		break;
+            case ATTACK_CHARGE:
+            	currentBoarBossAnimation = boarBossAttackingChargeAnimation;
+                break;
+            case ATTACK_THROW:
+            	currentBoarBossAnimation = boarBossAttackingThrowAnimation;
+                break;
+            case RUNNING:
+            	currentBoarBossAnimation = boarBossRunningAnimation;
+                break;
+            case HURT:
+            	currentBoarBossAnimation = boarBossHurtAnimation;
+                break;
+            case IDLE:
+            default:
+            	currentBoarBossAnimation = boarBossIdleAnimation;
+                break;
+        }
+
+        TextureRegion currentFrame = currentBoarBossAnimation.getKeyFrame(boarBossAnimationTime);
+
+        if (boarBossFacingRight && currentFrame.isFlipX()) {
+            currentFrame.flip(true, false);
+        } else if (!boarBossFacingRight && !currentFrame.isFlipX()) {
+            currentFrame.flip(true, false);
+        }
+
+        return currentFrame;
     }
     
     public TextureRegion getMlemCurrentFrame() {
@@ -741,6 +857,24 @@ public class AnimationManager {
                 return dogIdleAnimation.isAnimationFinished(dogAnimationTime);
     		}
     	}
+    	else if(entity.equals("BoarBoss")) {
+    		switch (boarBossCurrentState) {
+	        case DYING:
+	            return boarBossDyingAnimation.isAnimationFinished(boarBossAnimationTime);
+	        case RUNNING:
+	            return boarBossRunningAnimation.isAnimationFinished(boarBossAnimationTime);
+	        case ATTACK_CHARGE:
+	            return boarBossAttackingChargeAnimation.isAnimationFinished(boarBossAnimationTime);
+	        case ATTACK_THROW:
+	            return boarBossAttackingThrowAnimation.isAnimationFinished(boarBossAnimationTime);
+	        case HURT:
+                return boarBossHurtAnimation.isAnimationFinished(boarBossAnimationTime);
+	        case IDLE:
+	            return boarBossIdleAnimation.isAnimationFinished(boarBossAnimationTime);
+	        default:
+	        	return boarBossIdleAnimation.isAnimationFinished(boarBossAnimationTime);
+    		}
+    	}
     	else
     		return false;
     }
@@ -759,6 +893,8 @@ public class AnimationManager {
 			return archerFacingRight;
 		case "DogFollower":
 			return dogFacingRight;
+		case "BoarBoss":
+			return boarBossFacingRight;
 		default:
 			return false;
 		}

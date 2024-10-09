@@ -21,8 +21,8 @@ public class Storage {
     public TextFieldStyle textStyle;
     public BitmapFont font;
     public static AssetManager assetManager = new AssetManager();
-    private static boolean newLoad = true; 
-    private static int levelNum = 1, playerChar = 2, playerCoins = 0;
+    private static boolean newLoad = true, playerDead = false; 
+    private static int levelNum = 3, playerChar = 3, playerCoins = 0;
 
 	public static synchronized Storage getInstance()  {
         if (instance == null) {
@@ -66,6 +66,14 @@ public class Storage {
     	
     	assetManager.load("enemies/Peepee/Walking.png", Texture.class);
     	assetManager.load("enemies/Peepee/Dying.png", Texture.class);
+    	
+    	assetManager.load("enemies/BoarBoss/Dying.png", Texture.class);
+    	assetManager.load("enemies/BoarBoss/AttackCharge.png", Texture.class);
+    	assetManager.load("enemies/BoarBoss/AttackThrow.png", Texture.class);
+    	assetManager.load("enemies/BoarBoss/Hurt.png", Texture.class);
+    	assetManager.load("enemies/BoarBoss/Idle.png", Texture.class);
+    	assetManager.load("enemies/BoarBoss/Walking.png", Texture.class);
+    	assetManager.load("enemies/BoarBoss/Ball.png", Texture.class);
 	}
 
 	public static void loadPlayerAssets() {   
@@ -212,5 +220,13 @@ public class Storage {
 
 	public static void setPlayerCoins(int playerCoins) {
 		Storage.playerCoins = playerCoins;
+	}
+
+	public static boolean isPlayerDead() {
+		return playerDead;
+	}
+
+	public static void setPlayerDead(boolean playerDead) {
+		Storage.playerDead = playerDead;
 	}
 }
