@@ -1,5 +1,3 @@
-// PlayerMelee.java (refactored)
-
 package objects.player;
 
 import com.badlogic.gdx.Gdx;
@@ -9,7 +7,6 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.World;
 
-import config.GameScreen;
 import config.Storage;
 import managers.AnimationManager;
 import managers.AnimationManager.State;
@@ -24,7 +21,6 @@ public class PlayerMelee extends GameEntity {
     public static boolean death = false;
     private MeleeAttacks attack, weapon;
     private World world;
-    private boolean invulnerable = false;
     private boolean isDashing = false;
     private float dashTime = 0f;
     private float maxDashTime = 0.15f; 
@@ -43,7 +39,7 @@ public class PlayerMelee extends GameEntity {
     
     @Override
     protected void onDeath() {
-        die();
+    	Storage.setPlayerDead(true);  
     }
     
     public void respawn() {
@@ -145,7 +141,7 @@ public class PlayerMelee extends GameEntity {
     
     private void createDash() {
         if (attack == null) {
-        	setInvulnerable(true);
+        	Storage.setInvulnerable(true);
             attack = new MeleeAttacks(MeleeAttacks.WeaponType.CHARGE, world, body, getAnimationManager().isFacingRight("PlayerMelee"), this);
             isDashing = true;
             dashTime = 0;
@@ -157,7 +153,7 @@ public class PlayerMelee extends GameEntity {
         dashTime = 0; 
         attack = null;
         body.setLinearVelocity(0, body.getLinearVelocity().y); 
-        setInvulnerable(false);
+        Storage.setInvulnerable(false);
     }
 
     private void updateAnimationState() {
@@ -191,9 +187,7 @@ public class PlayerMelee extends GameEntity {
         if (!isDead) {
             isDead = true;
             getAnimationManager().setState(AnimationManager.State.DYING, "PlayerMelee");
-            body.setLinearVelocity(0, 0);
-            
-            setHealth(100, 100);
+            body.setLinearVelocity(0, 0);            
         }
     }
 
@@ -210,12 +204,4 @@ public class PlayerMelee extends GameEntity {
     public AnimationManager getAnimationManager() {
         return animationManager;
     }
-
-	public boolean isInvulnerable() {
-		return invulnerable;
-	}
-
-	public void setInvulnerable(boolean invulnerable) {
-		this.invulnerable = invulnerable;
-	}
 }

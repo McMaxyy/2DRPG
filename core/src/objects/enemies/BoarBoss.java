@@ -29,13 +29,16 @@ public class BoarBoss extends GameEntity {
 
 	// Dash and attack variables
     private boolean isDashing = false;
-    private float dashCooldown = 5f;  // Dash every 5 seconds
+    private float dashCooldown = 5f;
     private float dashTimer = 0f;
-    private float dashSpeed = 8f;  // Speed during dash
+    private float dashSpeed = 8f;
     private boolean isThrowing = false;
-    private Body projectile;  // Custom projectile for BoarBoss
-    private World world;  // BoarBoss needs access to the physics world to create the projectile
+    private Body projectile, door; 
+    private World world;  
 
+    private float projectileDistanceTraveled = 0f;
+    private final float maxProjectileDistance = 650f;
+    
     public BoarBoss(float width, float height, Body body, World world) {
         super(width, height, body);
         this.animationManager = new AnimationManager();
@@ -47,7 +50,7 @@ public class BoarBoss extends GameEntity {
 
     @Override
     public void onDeath() {
-        die();
+        die();       
     }
 
     @Override
@@ -59,13 +62,11 @@ public class BoarBoss extends GameEntity {
         x = body.getPosition().x * 100.0f;
         y = body.getPosition().y * 100.0f;
 
-        // Dash Timer: trigger dash every 5 seconds
         dashTimer += delta;
         if (dashTimer >= dashCooldown && !isDashing && !death) {
             startDash();
         }
 
-        // Handle throwing after dash if applicable
         if (isThrowing) {
             performThrowAttack();
         }
@@ -80,9 +81,12 @@ public class BoarBoss extends GameEntity {
             }
         }
         
-        if(projectile != null)
-        	if(isMarkedForRemoval)
-        		removeProjectile();
+        if (projectile != null) {
+            updateProjectileDistance(delta);
+            if (projectileDistanceTraveled >= maxProjectileDistance || isMarkedForRemoval) {
+                removeProjectile();
+            }
+        }
 
         updateStopTimer(delta);
 
@@ -93,12 +97,19 @@ public class BoarBoss extends GameEntity {
         updateAnimationState();
         animationManager.update(Gdx.graphics.getDeltaTime());
     }
+    
+    private void updateProjectileDistance(float delta) {
+        if (projectile != null) {
+            Vector2 velocity = projectile.getLinearVelocity();
+            projectileDistanceTraveled += velocity.len() * delta;
+        }
+    }
 
     public void reverseDirection() {
         movingLeft = !movingLeft;
         if (isDashing) {
-            stopDash();  // Stop dash when hitting a wall
-            startThrowAttack();  // Start the throw attack after the dash
+            stopDash();
+            startThrowAttack();
         }
     }
 
@@ -134,6 +145,7 @@ public class BoarBoss extends GameEntity {
                 deathTimer += Gdx.graphics.getDeltaTime();
                 if (deathTimer >= RESPAWN_DELAY) {
                     shouldDestroy = true;
+                    createGate();
                 }
             }
             return;
@@ -171,6 +183,27 @@ public class BoarBoss extends GameEntity {
         isThrowing = false;
         createProjectile();
     }
+    
+    private void createGate() {
+    	BodyDef doorBodyDef = new BodyDef();
+    	doorBodyDef.type = BodyDef.BodyType.StaticBody;
+    	
+    	doorBodyDef.position.set(this.body.getPosition().x, this.body.getPosition().y);
+    	
+    	door = world.createBody(doorBodyDef);
+    	
+    	PolygonShape doorShape = new PolygonShape();
+    	doorShape.setAsBox(1f, 1f);
+    	
+    	FixtureDef fixtureDef = new FixtureDef();
+        fixtureDef.shape = doorShape;
+        fixtureDef.density = 1f;
+        
+        door.createFixture(fixtureDef);
+        doorShape.dispose();
+        
+        door.setUserData("bossDoor");
+    }
 
     private void createProjectile() {
         Vector2 projectileDirection;
@@ -182,11 +215,9 @@ public class BoarBoss extends GameEntity {
             projectileDirection = new Vector2(projectileSpeed, 0);
         }
 
-        // Create a projectile body
         BodyDef projectileBodyDef = new BodyDef();
         projectileBodyDef.type = BodyDef.BodyType.KinematicBody;
 
-        // Offset from the BoarBoss body
         float offsetX = movingLeft ? -1.0f : 1.0f;
         projectileBodyDef.position.set(body.getPosition().x + offsetX, body.getPosition().y);
         projectileBodyDef.bullet = true;
@@ -199,14 +230,13 @@ public class BoarBoss extends GameEntity {
         FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = projectileShape;
         fixtureDef.density = 1f;
-        fixtureDef.isSensor = true;  // Ensure the projectile is a sensor so it doesn't collide with the boss itself
+        fixtureDef.isSensor = true;
 
         projectile.createFixture(fixtureDef);
         projectileShape.dispose();
         
         projectile.setUserData(this);
 
-        // Set projectile velocity
         projectile.setLinearVelocity(projectileDirection);        
     }
 

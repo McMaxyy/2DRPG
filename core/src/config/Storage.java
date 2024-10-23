@@ -21,8 +21,8 @@ public class Storage {
     public TextFieldStyle textStyle;
     public BitmapFont font;
     public static AssetManager assetManager = new AssetManager();
-    private static boolean newLoad = true, playerDead = false; 
-    private static int levelNum = 3, playerChar = 3, playerCoins = 0;
+    private static boolean newLoad = true, playerDead = false, invulnerable = false; 
+	private static int levelNum = 3, playerChar = 2, playerCoins = 0;
 
 	public static synchronized Storage getInstance()  {
         if (instance == null) {
@@ -228,5 +228,13 @@ public class Storage {
 
 	public static void setPlayerDead(boolean playerDead) {
 		Storage.playerDead = playerDead;
+	}
+	
+	public static boolean isInvulnerable() {
+		return invulnerable;
+	}
+
+	public static void setInvulnerable(boolean invulnerable) {
+		Storage.invulnerable = invulnerable;
 	}
 }

@@ -6,6 +6,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.Fixture;
 
+import config.Storage;
 import managers.AnimationManager;
 import objects.GameEntity;
 
@@ -93,6 +94,7 @@ public class Mlem extends GameEntity {
             	deathTimer += Gdx.graphics.getDeltaTime();
                 if (deathTimer >= RESPAWN_DELAY) {
                 	shouldDestroy = true;
+                	Storage.setInvulnerable(false);
                 }           
             }
             return;
@@ -116,6 +118,7 @@ public class Mlem extends GameEntity {
 
 	public void die() {
 		if (!isDead) {
+			Storage.setInvulnerable(true);
             isDead = true;
             death = true;
             getAnimationManager().setState(AnimationManager.State.DYING, "Mlem");

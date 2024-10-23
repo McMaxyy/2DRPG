@@ -61,7 +61,7 @@ public class PlayerArcher extends GameEntity {
     
     @Override
     protected void onDeath() {
-        die();        
+    	Storage.setPlayerDead(true);          
     }
     
     public void resetMana() {
@@ -97,9 +97,7 @@ public class PlayerArcher extends GameEntity {
         }
         
         if(getAnimationManager().isAnimationFinished("PlayerArcher"))
-        	canShoot = true;
-        
-        
+        	canShoot = true;        
     }
 
     @Override
@@ -189,7 +187,9 @@ public class PlayerArcher extends GameEntity {
                 isRunning = true;
             }
             
-            if (Gdx.input.justTouched() && Gdx.input.isButtonPressed(Input.Buttons.RIGHT) && nearestEnemyBody != null && !dogAttacking) {
+            if (Gdx.input.justTouched() && Gdx.input.isButtonPressed(Input.Buttons.RIGHT) && nearestEnemyBody != null && !dogAttacking && this.getMana() >= ArcherAttacks.getAttackCost("DogAttack")) {
+            	if(Storage.getLevelNum() != 0)
+                	this.loseMana(ArcherAttacks.getAttackCost("DogAttack"));
             	dogAttack = new ArcherAttacks(ArcherAttacks.ArrowType.DOG_ATTACK, world, body, nearestEnemyBody.getPosition(), getAnimationManager());
             	dogAttacking = true;              
             }
@@ -325,7 +325,11 @@ public class PlayerArcher extends GameEntity {
             getAnimationManager().setState(AnimationManager.State.DYING, "PlayerArcher");
             body.setLinearVelocity(0, 0);
             
-            setHealth(100, 100);
+            if (arrow != null) {
+            	arrow.removeArrow("Arrow");
+            	arrow = null;
+            }
+            
             setMana(50, 50);
         }
     }

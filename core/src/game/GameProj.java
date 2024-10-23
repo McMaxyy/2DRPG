@@ -488,6 +488,21 @@ public class GameProj implements Screen, ContactListener {
 
 	    boolean isCoinA = bodyA.getUserData() instanceof Coin;
 	    boolean isCoinB = bodyB.getUserData() instanceof Coin;
+	    
+	    boolean isSpellA = bodyA.getUserData() instanceof SpellAttacks;
+	    boolean isSpellB = bodyB.getUserData() instanceof SpellAttacks;
+	    
+	    boolean isWeaponA = bodyA.getUserData() instanceof MeleeAttacks;
+	    boolean isWeaponB = bodyB.getUserData() instanceof MeleeAttacks;
+	    
+	    boolean isArrowA = bodyA.getUserData() instanceof ArcherAttacks;
+	    boolean isArrowB = bodyB.getUserData() instanceof ArcherAttacks;
+	    
+	    boolean isProjectileA = bodyA.getUserData() instanceof BoarBoss;
+	    boolean isProjectileB = bodyB.getUserData() instanceof BoarBoss;
+	    
+	    boolean isBossDoorA = "bossDoor".equals(bodyA.getUserData());
+	    boolean isBossDoorB = "bossDoor".equals(bodyB.getUserData());
 
 	    if ((isPlayerA && isCoinB) || (isPlayerB && isCoinA)) {
 	        Coin coin = isCoinA ? (Coin) bodyA.getUserData() : (Coin) bodyB.getUserData();
@@ -514,13 +529,16 @@ public class GameProj implements Screen, ContactListener {
 
 	    if (((isPlayerA && isDeathB) || (isPlayerB && isDeathA)) && Storage.getPlayerChar() == 1) {
 	        PlayerMelee player = isPlayerA ? (PlayerMelee) bodyA.getUserData() : (PlayerMelee) bodyB.getUserData();
-	        player.die();
+            if(!Storage.isInvulnerable())
+            	player.die();
 	    } else if (((isPlayerA && isDeathB) || (isPlayerB && isDeathA)) && Storage.getPlayerChar() == 2) {
 	        PlayerMage player = isPlayerA ? (PlayerMage) bodyA.getUserData() : (PlayerMage) bodyB.getUserData();
-	        player.die();
+            if(!Storage.isInvulnerable())
+            	player.die();
 	    } else if (((isPlayerA && isDeathB) || (isPlayerB && isDeathA)) && Storage.getPlayerChar() == 3) {
 	    	PlayerArcher player = isPlayerA ? (PlayerArcher) bodyA.getUserData() : (PlayerArcher) bodyB.getUserData();
-	        player.die();
+            if(!Storage.isInvulnerable())
+            	player.die();
 	    }
 
 	    if (isPeepeeA && !isPlayerB && isEWallsB) {
@@ -532,7 +550,7 @@ public class GameProj implements Screen, ContactListener {
 	    if (((isBoarBossA && isPlayerB) || (isBoarBossB && isPlayerA)) && Storage.getPlayerChar() == 1) {
 	        if (boarBoss != null && !boarBoss.death && boarBoss.getProjectile()) {
 	            PlayerMelee player = isPlayerA ? (PlayerMelee) bodyA.getUserData() : (PlayerMelee) bodyB.getUserData();
-	            if(!player.isInvulnerable()) {
+	            if(!Storage.isInvulnerable()) {
 	            	player.takeDamage(40);
 	            	player.die();
 	            }
@@ -540,14 +558,18 @@ public class GameProj implements Screen, ContactListener {
 	    } else if (((isBoarBossA && isPlayerB) || (isBoarBossB && isPlayerA)) && Storage.getPlayerChar() == 2) {
 	        if (boarBoss != null && !boarBoss.death && boarBoss.getProjectile()) {
 	            PlayerMage player = isPlayerA ? (PlayerMage) bodyA.getUserData() : (PlayerMage) bodyB.getUserData();
-	            player.takeDamage(40);
-	            player.die();
+		        if(!Storage.isInvulnerable()) {
+	            	player.takeDamage(40);
+	            	player.die();
+	            }
 	        }
 	    } else if (((isBoarBossA && isPlayerB) || (isBoarBossB && isPlayerA)) && Storage.getPlayerChar() == 3) {
-	        if (boarBoss != null && !boarBoss.death && boarBoss.getProjectile()) {
-	        	PlayerArcher player = isPlayerA ? (PlayerArcher) bodyA.getUserData() : (PlayerArcher) bodyB.getUserData();
-	            player.takeDamage(40);
-	            player.die();
+	    	if (boarBoss != null && !boarBoss.death && boarBoss.getProjectile()) {
+	            PlayerArcher player = isPlayerA ? (PlayerArcher) bodyA.getUserData() : (PlayerArcher) bodyB.getUserData();
+	            if(!Storage.isInvulnerable()) {
+	            	player.takeDamage(40);
+	            	player.die();
+	            }
 	        }
 	    }
 
@@ -558,7 +580,7 @@ public class GameProj implements Screen, ContactListener {
 	            (peepee4 != null && !peepee4.death)) {
 
 	            PlayerMelee player = isPlayerA ? (PlayerMelee) bodyA.getUserData() : (PlayerMelee) bodyB.getUserData();
-	            if(!player.isInvulnerable())
+	            if(!Storage.isInvulnerable())
 	            	player.die();
 	        }
 	    } else if (((isPeepeeA && isPlayerB) || (isPeepeeB && isPlayerA)) && Storage.getPlayerChar() == 2) {
@@ -568,7 +590,8 @@ public class GameProj implements Screen, ContactListener {
 	            (peepee4 != null && !peepee4.death)) {
 
 	            PlayerMage player = isPlayerA ? (PlayerMage) bodyA.getUserData() : (PlayerMage) bodyB.getUserData();
-	            player.die();
+	            if(!Storage.isInvulnerable())
+	            	player.die();
 	        }
 	    } else if (((isPeepeeA && isPlayerB) || (isPeepeeB && isPlayerA)) && Storage.getPlayerChar() == 3) {
 	        if ((peepee != null && !peepee.death) ||
@@ -577,7 +600,8 @@ public class GameProj implements Screen, ContactListener {
 	            (peepee4 != null && !peepee4.death)) {
 
 	        	PlayerArcher player = isPlayerA ? (PlayerArcher) bodyA.getUserData() : (PlayerArcher) bodyB.getUserData();
-	            player.die();
+	        	if(!Storage.isInvulnerable())
+	            	player.die();
 	        }
 	    } 
 	    
@@ -596,46 +620,45 @@ public class GameProj implements Screen, ContactListener {
 	    if (((isMlemA && isPlayerB) || (isMlemB && isPlayerA)) && Storage.getPlayerChar() == 1) {
 	        if ((mlem != null && !mlem.death) || (mlem2 != null && !mlem2.death)) {
 	            PlayerMelee player = isPlayerA ? (PlayerMelee) bodyA.getUserData() : (PlayerMelee) bodyB.getUserData();
-	            if(!player.isInvulnerable())
+	            if(!Storage.isInvulnerable())
 	            	player.die();
-	        }
+    		}
 	    } else if (((isMlemA && isPlayerB) || (isMlemB && isPlayerA)) && Storage.getPlayerChar() == 2) {
 	        if ((mlem != null && !mlem.death) || (mlem2 != null && !mlem2.death)) {
 	            PlayerMage player = isPlayerA ? (PlayerMage) bodyA.getUserData() : (PlayerMage) bodyB.getUserData();
-	            player.die();
+	            if(!Storage.isInvulnerable())
+	            	player.die();
 	        }
 	    } else if (((isMlemA && isPlayerB) || (isMlemB && isPlayerA)) && Storage.getPlayerChar() == 3) {
 	        if ((mlem != null && !mlem.death) || (mlem2 != null && !mlem2.death)) {
 	        	PlayerArcher player = isPlayerA ? (PlayerArcher) bodyA.getUserData() : (PlayerArcher) bodyB.getUserData();
-	            player.die();
+	        	if(!Storage.isInvulnerable())
+	            	player.die();
 	        }
+	    }	    
+	    
+	    if ((isPlayerA && isBossDoorB) || (isPlayerB && isBossDoorA)) {
+	    	Storage.setLevelNum(0);
+	        gameScreen.switchToNewState(GameScreen.HOME);
 	    }
-
-	    boolean isSpellA = bodyA.getUserData() instanceof SpellAttacks;
-	    boolean isSpellB = bodyB.getUserData() instanceof SpellAttacks;
-	    
-	    boolean isWeaponA = bodyA.getUserData() instanceof MeleeAttacks;
-	    boolean isWeaponB = bodyB.getUserData() instanceof MeleeAttacks;
-	    
-	    boolean isArrowA = bodyA.getUserData() instanceof ArcherAttacks;
-	    boolean isArrowB = bodyB.getUserData() instanceof ArcherAttacks;
-	    
-	    boolean isProjectileA = bodyA.getUserData() instanceof BoarBoss;
-	    boolean isProjectileB = bodyB.getUserData() instanceof BoarBoss;
 	    
 	    if (((isPlayerA && isProjectileB) || (isPlayerB && isProjectileA)) && Storage.getPlayerChar() == 1 && !boarBoss.death) {
 	        PlayerMelee player = isPlayerA ? (PlayerMelee) bodyA.getUserData() : (PlayerMelee) bodyB.getUserData();
-	        if(!player.isInvulnerable()) {
+	        if(!Storage.isInvulnerable()) {
             	player.takeDamage(10);
             }
 	        boarBoss.markForRemoval();
 	    } else if (((isPlayerA && isProjectileB) || (isPlayerB && isProjectileA)) && Storage.getPlayerChar() == 2 && !boarBoss.death) {
 	        PlayerMage player = isPlayerA ? (PlayerMage) bodyA.getUserData() : (PlayerMage) bodyB.getUserData();
-	        player.takeDamage(10);
+	        if(!Storage.isInvulnerable()) {
+            	player.takeDamage(10);
+            }
 	        boarBoss.markForRemoval();
 	    } else if (((isPlayerA && isProjectileB) || (isPlayerB && isProjectileA)) && Storage.getPlayerChar() == 3 && !boarBoss.death) {
 	    	PlayerArcher player = isPlayerA ? (PlayerArcher) bodyA.getUserData() : (PlayerArcher) bodyB.getUserData();
-	    	player.takeDamage(10);
+	    	if(!Storage.isInvulnerable()) {
+            	player.takeDamage(10);
+            }
 	    	boarBoss.markForRemoval();
 	    }
 

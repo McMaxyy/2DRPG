@@ -97,6 +97,7 @@ public class Peepee extends GameEntity {
                 deathTimer += Gdx.graphics.getDeltaTime();
                 if (deathTimer >= RESPAWN_DELAY) {
                 	shouldDestroy = true;
+                	Storage.setInvulnerable(false);
                 }             
             }
             return;
@@ -120,6 +121,7 @@ public class Peepee extends GameEntity {
 
 	public void die() {
 		if (!isDead) {
+			Storage.setInvulnerable(true);
             isDead = true;
             death = true;
             getAnimationManager().setState(AnimationManager.State.DYING, "Peepee");

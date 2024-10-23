@@ -92,47 +92,7 @@ public class AnimationManager {
 	}
 
 	private void loadEnemyAnimations() {
-    	try {
-    		// Pedro running
-    		Texture pedroRunningTex = Storage.assetManager.get("enemies/Pedro/Walking.png", Texture.class);
-    		pedroRunningTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);           
-            TextureRegion[][] pedroRunningFrames = TextureRegion.split(pedroRunningTex, pedroRunningTex.getWidth() / 12, pedroRunningTex.getHeight());
-            Array<TextureRegion> pedroRunningFrame = new Array<>();
-            for (int i = 0; i < 12; i++) {
-            	pedroRunningFrame.add(pedroRunningFrames[0][i]);
-            }
-            pedroRunningAnimation = new Animation<>(0.06f, pedroRunningFrame, Animation.PlayMode.LOOP);
-            
-            // Pedro dying
-            Texture pedroDyingTex = Storage.assetManager.get("enemies/Pedro/Dying.png", Texture.class);
-            pedroDyingTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);           
-            TextureRegion[][] pedroDyingFrames = TextureRegion.split(pedroDyingTex, pedroDyingTex.getWidth() / 15, pedroDyingTex.getHeight());
-            Array<TextureRegion> pedroDyingFrame = new Array<>();
-            for (int i = 0; i < 15; i++) {
-            	pedroDyingFrame.add(pedroDyingFrames[0][i]);
-            }
-            pedroDyingAnimation = new Animation<>(0.05f, pedroDyingFrame, Animation.PlayMode.NORMAL);
-
-            // Pedro attacking
-            Texture pedroAttackingTex = Storage.assetManager.get("enemies/Pedro/Attacking.png", Texture.class);
-            pedroAttackingTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);           
-            TextureRegion[][] pedroAttackFrames = TextureRegion.split(pedroAttackingTex, pedroAttackingTex.getWidth() / 12, pedroAttackingTex.getHeight());
-            Array<TextureRegion> pedroAttackingFrame = new Array<>();
-            for (int i = 0; i < 12; i++) {
-            	pedroAttackingFrame.add(pedroAttackFrames[0][i]);
-            }
-            pedroAttackingAnimation = new Animation<>(0.05f, pedroAttackingFrame, Animation.PlayMode.NORMAL);
-            
-            // Pedro idle
-            Texture pedroIdleTex = Storage.assetManager.get("enemies/Pedro/Idle.png", Texture.class);
-            pedroIdleTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);           
-            TextureRegion[][] pedroIdleFrames = TextureRegion.split(pedroIdleTex, pedroIdleTex.getWidth() / 12, pedroAttackingTex.getHeight());
-            Array<TextureRegion> pedroIdleFrame = new Array<>();
-            for (int i = 0; i < 12; i++) {
-            	pedroIdleFrame.add(pedroIdleFrames[0][i]);
-            }
-            pedroIdleAnimation = new Animation<>(0.075f, pedroIdleFrame, Animation.PlayMode.LOOP);
-            
+    	try {         
             // Mlem walking
             Texture mlemWalkingTexture = Storage.assetManager.get("enemies/Mlem/Walking.png", Texture.class);
             mlemWalkingTexture.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);           
@@ -240,6 +200,46 @@ public class AnimationManager {
 
 	private void loadPlayerAnimations() {
         try {
+        	// Pedro running
+    		Texture pedroRunningTex = Storage.assetManager.get("enemies/Pedro/Walking.png", Texture.class);
+    		pedroRunningTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);           
+            TextureRegion[][] pedroRunningFrames = TextureRegion.split(pedroRunningTex, pedroRunningTex.getWidth() / 12, pedroRunningTex.getHeight());
+            Array<TextureRegion> pedroRunningFrame = new Array<>();
+            for (int i = 0; i < 12; i++) {
+            	pedroRunningFrame.add(pedroRunningFrames[0][i]);
+            }
+            pedroRunningAnimation = new Animation<>(0.06f, pedroRunningFrame, Animation.PlayMode.LOOP);
+            
+            // Pedro dying
+            Texture pedroDyingTex = Storage.assetManager.get("enemies/Pedro/Dying.png", Texture.class);
+            pedroDyingTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);           
+            TextureRegion[][] pedroDyingFrames = TextureRegion.split(pedroDyingTex, pedroDyingTex.getWidth() / 15, pedroDyingTex.getHeight());
+            Array<TextureRegion> pedroDyingFrame = new Array<>();
+            for (int i = 0; i < 15; i++) {
+            	pedroDyingFrame.add(pedroDyingFrames[0][i]);
+            }
+            pedroDyingAnimation = new Animation<>(0.05f, pedroDyingFrame, Animation.PlayMode.NORMAL);
+
+            // Pedro attacking
+            Texture pedroAttackingTex = Storage.assetManager.get("enemies/Pedro/Attacking.png", Texture.class);
+            pedroAttackingTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);           
+            TextureRegion[][] pedroAttackFrames = TextureRegion.split(pedroAttackingTex, pedroAttackingTex.getWidth() / 12, pedroAttackingTex.getHeight());
+            Array<TextureRegion> pedroAttackingFrame = new Array<>();
+            for (int i = 0; i < 12; i++) {
+            	pedroAttackingFrame.add(pedroAttackFrames[0][i]);
+            }
+            pedroAttackingAnimation = new Animation<>(0.05f, pedroAttackingFrame, Animation.PlayMode.NORMAL);
+            
+            // Pedro idle
+            Texture pedroIdleTex = Storage.assetManager.get("enemies/Pedro/Idle.png", Texture.class);
+            pedroIdleTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);           
+            TextureRegion[][] pedroIdleFrames = TextureRegion.split(pedroIdleTex, pedroIdleTex.getWidth() / 12, pedroAttackingTex.getHeight());
+            Array<TextureRegion> pedroIdleFrame = new Array<>();
+            for (int i = 0; i < 12; i++) {
+            	pedroIdleFrame.add(pedroIdleFrames[0][i]);
+            }
+            pedroIdleAnimation = new Animation<>(0.075f, pedroIdleFrame, Animation.PlayMode.LOOP);
+        	
         	// Dog running
         	Texture dogRunningTex = Storage.assetManager.get("character/Dog/Running.png", Texture.class);
     		dogRunningTex.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);           
@@ -561,71 +561,71 @@ public class AnimationManager {
         return currentFrame;
     }
     
-    public TextureRegion getArcherCurrentFrame() {
-        Animation<TextureRegion> currentAnimation;
-
-        switch (archerCurrentState) {
-        	case DYING:
-        		currentAnimation = archerDyingAnimation;
-        		break;
-            case ATTACKING:
-                currentAnimation = archerAttackingAnimation;
-                break;
-            case RUNNING:
-                currentAnimation = archerRunningAnimation;
-                break;
-            case JUMPING:
-                currentAnimation = archerJumpingAnimation;
-                break;
-            case IDLE:
-            default:
-                currentAnimation = archerIdleAnimation;
-                break;
-        }
-
-        TextureRegion currentFrame = currentAnimation.getKeyFrame(archerAnimationTime);
-
-        if (archerFacingRight && currentFrame.isFlipX()) {
-            currentFrame.flip(true, false);
-        } else if (!archerFacingRight && !currentFrame.isFlipX()) {
-            currentFrame.flip(true, false);
-        }
-
-        return currentFrame;
-    }
-    
     public TextureRegion getDogCurrentFrame() {
-        Animation<TextureRegion> currentAnimation;
+        Animation<TextureRegion> currentDogAnimation;
 
         switch (dogCurrentState) {
         	case DYING:
-        		currentAnimation = dogDyingAnimation;
+        		currentDogAnimation = dogDyingAnimation;
         		break;
             case ATTACKING:
-                currentAnimation = dogAttackingAnimation;
+                currentDogAnimation = dogAttackingAnimation;
                 break;
             case RUNNING:
-                currentAnimation = dogRunningAnimation;
+                currentDogAnimation = dogRunningAnimation;
                 break;
             case JUMPING:
-                currentAnimation = dogJumpingAnimation;
+                currentDogAnimation = dogJumpingAnimation;
                 break;
             case IDLE:
             default:
-                currentAnimation = dogIdleAnimation;
+                currentDogAnimation = dogIdleAnimation;
                 break;
         }
 
-        TextureRegion currentFrame = currentAnimation.getKeyFrame(dogAnimationTime);
+        TextureRegion currentDogFrame = currentDogAnimation.getKeyFrame(dogAnimationTime);
 
-        if (dogFacingRight && currentFrame.isFlipX()) {
-            currentFrame.flip(true, false);
-        } else if (!dogFacingRight && !currentFrame.isFlipX()) {
-            currentFrame.flip(true, false);
+        if (dogFacingRight && currentDogFrame.isFlipX()) {
+            currentDogFrame.flip(true, false);
+        } else if (!dogFacingRight && !currentDogFrame.isFlipX()) {
+            currentDogFrame.flip(true, false);
         }
 
-        return currentFrame;
+        return currentDogFrame;
     }
+    
+    public TextureRegion getArcherCurrentFrame() {
+        Animation<TextureRegion> currentArcherAnimation;
+
+        switch (archerCurrentState) {
+        	case DYING:
+        		currentArcherAnimation = archerDyingAnimation;
+        		break;
+            case ATTACKING:
+                currentArcherAnimation = archerAttackingAnimation;
+                break;
+            case RUNNING:
+                currentArcherAnimation = archerRunningAnimation;
+                break;
+            case JUMPING:
+                currentArcherAnimation = archerJumpingAnimation;
+                break;
+            case IDLE:
+            default:
+                currentArcherAnimation = archerIdleAnimation;
+                break;
+        }
+
+        TextureRegion currentArcherFrame = currentArcherAnimation.getKeyFrame(archerAnimationTime);
+
+        if (archerFacingRight && currentArcherFrame.isFlipX()) {
+        	currentArcherFrame.flip(true, false);
+        } else if (!archerFacingRight && !currentArcherFrame.isFlipX()) {
+        	currentArcherFrame.flip(true, false);
+        }
+
+        return currentArcherFrame;
+    }   
 
     public TextureRegion getPedroCurrentFrame() {
         Animation<TextureRegion> currentPedroAnimation;
@@ -828,7 +828,7 @@ public class AnimationManager {
     		}
     	}
     	else if(entity.equals("PlayerArcher")) {
-    		switch (currentState) {
+    		switch (archerCurrentState) {
             case ATTACKING:
                 return archerAttackingAnimation.isAnimationFinished(archerAnimationTime);
             case DYING:
@@ -843,7 +843,7 @@ public class AnimationManager {
     		}
     	}
     	else if(entity.equals("DogFollower")) {
-    		switch (currentState) {
+    		switch (dogCurrentState) {
             case ATTACKING:
                 return dogAttackingAnimation.isAnimationFinished(dogAnimationTime);
             case DYING:

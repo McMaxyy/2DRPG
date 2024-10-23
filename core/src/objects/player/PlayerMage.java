@@ -1,5 +1,3 @@
-// PlayerMage.java (refactored)
-
 package objects.player;
 
 import com.badlogic.gdx.Gdx;
@@ -28,6 +26,7 @@ public class PlayerMage extends GameEntity {
     private World world;
     private SpellAttacks spell;
     private int mana = 50, maxMana = 50;
+	private boolean isMarkedForRemoval;
 
     public PlayerMage(float width, float height, Body body, float initialX, float initialY, World world) {
         super(width, height, body);
@@ -42,9 +41,6 @@ public class PlayerMage extends GameEntity {
     }
     
     public void respawn() {
-        if (spell != null) {
-            spell.removeSpell();
-        }
         body.setTransform(initialX / 100f, initialY / 100f, 0);
         isDead = false;
         death = false;
@@ -69,6 +65,12 @@ public class PlayerMage extends GameEntity {
         checkUserInput();
         updateAnimationState();
         getAnimationManager().update(Gdx.graphics.getDeltaTime());
+        
+        if(isMarkedForRemoval && spell != null) {
+        	spell.removeSpell();
+            spell = null;
+            isMarkedForRemoval = false;
+        }
 
         if (spell != null) {
             spell.update(Gdx.graphics.getDeltaTime());
@@ -77,7 +79,7 @@ public class PlayerMage extends GameEntity {
                 spell.removeSpell();
                 spell = null;
             }
-        }
+        }        
     }
 
     @Override
@@ -144,14 +146,16 @@ public class PlayerMage extends GameEntity {
             if (Gdx.input.justTouched() && Gdx.input.isButtonPressed(Input.Buttons.RIGHT) && spell == null && this.getMana() >= SpellAttacks.getSpellCost("Fireball")) {
             	getAnimationManager().setState(State.ATTACKING, "Pedro");                           
                 castLightning();
-                this.loseMana(SpellAttacks.getSpellCost("Lightning"));
+                if(Storage.getLevelNum() != 0)
+                	this.loseMana(SpellAttacks.getSpellCost("Lightning"));
                 getAnimationManager().setState(vfxState.LIGHTNING);
             }
 
             if (Gdx.input.justTouched() && Gdx.input.isButtonPressed(Input.Buttons.LEFT) && spell == null && this.getMana() >= SpellAttacks.getSpellCost("Lightning")) {                
                 getAnimationManager().setState(State.ATTACKING, "Pedro");
-                castFireball();   
-                this.loseMana(SpellAttacks.getSpellCost("Fireball"));
+                castFireball();  
+                if(Storage.getLevelNum() != 0)
+                	this.loseMana(SpellAttacks.getSpellCost("Fireball"));
                 getAnimationManager().setState(vfxState.FIREBALL);
             }
 
@@ -253,13 +257,14 @@ public class PlayerMage extends GameEntity {
             getAnimationManager().setState(AnimationManager.State.DYING, "Pedro");
             body.setLinearVelocity(0, 0);
             
-            if (spell != null) {
-                spell.removeSpell();
-                spell = null;
-            }
+            isMarkedForRemoval = true;
 
             setMana(50, 50);
         }
+    }
+    
+    public void markForRemoval() {
+        this.isMarkedForRemoval = true;
     }
 
     public void checkRespawn() {

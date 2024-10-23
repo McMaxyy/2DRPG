@@ -24,6 +24,7 @@ public class ArcherAttacks extends AttackEntity{
     private AnimationManager animationManager;
     private boolean isMarkedForRemoval = false;
     private boolean facingRight;
+    private static int dogAttackCost = 20;
 
 	public ArcherAttacks(ArrowType type, World world, Body playerBody, Vector2 targetPosition, AnimationManager animationManager) {
 		super(type == ArrowType.BASIC ? 10 : type == ArrowType.DOG ? 0 : 20);
@@ -43,6 +44,15 @@ public class ArcherAttacks extends AttackEntity{
         	break;
         }
 	}
+	
+	public static int getAttackCost(String attack) {
+    	switch(attack) {
+    	case "DogAttack":
+    		return dogAttackCost;
+    	default:
+    		return 0;
+    	}
+    }
 	
 	private void dogAttack(Body playerBody, Vector2 targetPosition) {
         if (dogAttack != null)
