@@ -22,7 +22,7 @@ public class Storage {
     public BitmapFont font;
     public static AssetManager assetManager = new AssetManager();
     private static boolean newLoad = true, playerDead = false, invulnerable = false; 
-	private static int levelNum = 3, playerChar = 2, playerCoins = 0;
+	private static int levelNum = 0, playerChar = 1, playerCoins = 0;
 
 	public static synchronized Storage getInstance()  {
         if (instance == null) {

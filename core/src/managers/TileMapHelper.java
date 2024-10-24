@@ -2,10 +2,16 @@ package managers;
 
 import java.util.ArrayList;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.TextureData;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.MapObjects;
 import com.badlogic.gdx.maps.objects.PolygonMapObject;
 import com.badlogic.gdx.maps.objects.RectangleMapObject;
+import com.badlogic.gdx.maps.objects.TextureMapObject;
 import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
@@ -31,6 +37,7 @@ public class TileMapHelper {
 	private GameProj gameP;
 	private static final float PPM = 100.0f;
     private ArrayList<Coin> coins;
+    private ArrayList<TextureMapObject> bgTextures = new ArrayList<>();
 	
 	public TileMapHelper(GameProj gameP) {
 		this.gameP = gameP;
@@ -93,6 +100,9 @@ public class TileMapHelper {
 				parseMapObjects(map0.getLayers().get("CollisionLayer").getObjects());
 				parseMapObjects(map0.getLayers().get("Adventure").getObjects());
 				parseMapObjects(map0.getLayers().get("ChangeChar").getObjects());
+				parseMapObjects(map0.getLayers().get("BG_Objects1").getObjects());
+				parseMapObjects(map0.getLayers().get("BG_Objects2").getObjects());
+				parseMapObjects(map0.getLayers().get("BG_Objects3").getObjects());
 			}			
 			return new OrthogonalTiledMapRenderer(map0);			
 		case 1:
@@ -102,6 +112,7 @@ public class TileMapHelper {
 				parseMapObjects(map1.getLayers().get("Level2").getObjects());
 				parseMapObjects(map1.getLayers().get("EnemyWalls").getObjects());
 				parseMapObjects(map1.getLayers().get("Coins").getObjects());
+				parseMapObjects(map1.getLayers().get("BG_Objects").getObjects());
 			}						
 			return new OrthogonalTiledMapRenderer(map1);
 		case 2:
@@ -126,9 +137,55 @@ public class TileMapHelper {
 			return new OrthogonalTiledMapRenderer(map1);
 		}
 	}
+	
+	public void printLayerIndices() {
+	    TiledMap map = getCurrentMap();
+	    if (map != null) {
+	        for (int i = 0; i < map.getLayers().getCount(); i++) {
+	            String layerName = map.getLayers().get(i).getName();
+	            System.out.println("Layer index: " + i + " - Layer name: " + layerName);
+	        }
+	    } else {
+	        System.out.println("No map is currently loaded.");
+	    }
+	}
+	
+	private void createTextureObject(TextureMapObject textureMapObject) {
+	    TextureRegion region = textureMapObject.getTextureRegion();
+	    Texture originalTexture = region.getTexture();
+
+	    TextureData textureData = originalTexture.getTextureData();
+	    if (!textureData.isPrepared()) {
+	        textureData.prepare();
+	    }
+
+	    Texture textureWithMipMap = new Texture(textureData);
+	    textureWithMipMap.setFilter(Texture.TextureFilter.MipMapNearestLinear, Texture.TextureFilter.Linear);
+
+	    textureWithMipMap.bind();
+	    Gdx.gl.glGenerateMipmap(GL20.GL_TEXTURE_2D);
+
+	    TextureRegion newRegion = new TextureRegion(textureWithMipMap, region.getRegionX(), region.getRegionY(), region.getRegionWidth(), region.getRegionHeight());
+
+	    textureMapObject.setTextureRegion(newRegion);
+	    bgTextures.add(textureMapObject);
+	}
+	
+	public ArrayList<TextureMapObject> getBgTextures() {
+	    return bgTextures;
+	}
 
 	private void parseMapObjects(MapObjects objects) {
 		for(MapObject object : objects) {
+			
+			
+			if(object instanceof TextureMapObject) {
+				 TextureMapObject textureMapObject = (TextureMapObject) object;
+		            if ("bgObjects".equals(textureMapObject.getName())) {
+		                createTextureObject(textureMapObject);
+		            }				
+			}
+			
 			if(object instanceof PolygonMapObject) {
 				createStaticBody((PolygonMapObject) object);			
 			}
@@ -297,7 +354,7 @@ public class TileMapHelper {
         body.setUserData(coin);
         coins.add(coin);
     }
-	
+
 	private void createStaticBody(PolygonMapObject polyMapObject) {
 		BodyDef bodyDef = new BodyDef();
 		bodyDef.type = BodyDef.BodyType.StaticBody;

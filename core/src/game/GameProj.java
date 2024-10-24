@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.maps.MapObject;
 import com.badlogic.gdx.maps.objects.PolygonMapObject;
+import com.badlogic.gdx.maps.objects.TextureMapObject;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
@@ -91,7 +92,7 @@ public class GameProj implements Screen, ContactListener {
         coinLabel = new Label("x", storage.labelStyle);
         coinLabel.setFontScale(0.8f);
         coinLabel.setPosition(55, Gdx.graphics.getHeight() - 48);
-        stage.addActor(coinLabel);
+        stage.addActor(coinLabel);       
     }
     
     private void cameraUpdate() {
@@ -211,6 +212,18 @@ public class GameProj implements Screen, ContactListener {
         
         storage.font.setColor(1, 1, 1, 1);
     }
+    
+    private void renderBackgroundTextures() {
+        for (TextureMapObject textureObject : mapHelper.getBgTextures()) {
+            Texture texture = textureObject.getTextureRegion().getTexture();
+            float x = textureObject.getX();
+            float y = textureObject.getY();
+            float width = textureObject.getTextureRegion().getRegionWidth();
+            float height = textureObject.getTextureRegion().getRegionHeight();
+
+            batch.draw(texture, x, y, width, height);
+        }
+    }
 
     @Override
     public void render(float delta) { 
@@ -238,15 +251,22 @@ public class GameProj implements Screen, ContactListener {
         world.step(TIME_STEP, 6, 2);              
               
         mapRenderer.setView(camera);
-        mapRenderer.render();  
+        if(Storage.getLevelNum() != 3) {
+        	mapRenderer.render(new int[]{0});
+            batch.setProjectionMatrix(camera.combined); 
+            batch.begin();
+            renderBackgroundTextures();
+            batch.end();
+            mapRenderer.render(new int[]{1, 2, 3, 4, 5, 6});
+        }
+        else
+        	mapRenderer.render();
         
         for (Coin coin : mapHelper.getCoins()) {
             coin.update(delta);
             coin.render(batch);
         }
-        
-        drawInteractablePolygons();
-        
+                
         coinLabel.setText("x" + Storage.getPlayerCoins());
         batch.setProjectionMatrix(hudCamera.combined);
         batch.begin();
@@ -276,7 +296,9 @@ public class GameProj implements Screen, ContactListener {
         
         checkForBodyDestruction();       
         
-        batch.setProjectionMatrix(camera.combined);       
+        batch.setProjectionMatrix(camera.combined); 
+        drawInteractablePolygons();
+        
         if(peepee != null)
         	peepee.render(batch);
         if(peepee2 != null)
@@ -646,8 +668,8 @@ public class GameProj implements Screen, ContactListener {
 	        PlayerMelee player = isPlayerA ? (PlayerMelee) bodyA.getUserData() : (PlayerMelee) bodyB.getUserData();
 	        if(!Storage.isInvulnerable()) {
             	player.takeDamage(10);
+            	boarBoss.markForRemoval();
             }
-	        boarBoss.markForRemoval();
 	    } else if (((isPlayerA && isProjectileB) || (isPlayerB && isProjectileA)) && Storage.getPlayerChar() == 2 && !boarBoss.death) {
 	        PlayerMage player = isPlayerA ? (PlayerMage) bodyA.getUserData() : (PlayerMage) bodyB.getUserData();
 	        if(!Storage.isInvulnerable()) {
@@ -658,8 +680,8 @@ public class GameProj implements Screen, ContactListener {
 	    	PlayerArcher player = isPlayerA ? (PlayerArcher) bodyA.getUserData() : (PlayerArcher) bodyB.getUserData();
 	    	if(!Storage.isInvulnerable()) {
             	player.takeDamage(10);
-            }
-	    	boarBoss.markForRemoval();
+            	boarBoss.markForRemoval();
+            }    	
 	    }
 
 	    if ((isSpellA && isEnemyB && !isPlayerB) || (isSpellB && isEnemyA && !isPlayerA)) {
@@ -682,11 +704,13 @@ public class GameProj implements Screen, ContactListener {
 	        if (isEnemyA) {
 	            GameEntity enemy = (GameEntity) bodyA.getUserData();
 	            arrow.dealDamage(enemy);
-	            enemy.stopEntity();
+	            if(Storage.getLevelNum() != 3)
+	            	enemy.stopEntity();
 	        } else if (isEnemyB) {
 	            GameEntity enemy = (GameEntity) bodyB.getUserData();
 	            arrow.dealDamage(enemy);	
-	            enemy.stopEntity();
+	            if(Storage.getLevelNum() != 3)
+	            	enemy.stopEntity();
 	        }
 
 	        arrow.markForRemoval();
@@ -698,11 +722,13 @@ public class GameProj implements Screen, ContactListener {
 	        if (isEnemyA) {
 	            GameEntity enemy = (GameEntity) bodyA.getUserData();
 	            weapon.dealDamage(enemy);
-	            enemy.stopEntity();
+	            if(Storage.getLevelNum() != 3)
+	            	enemy.stopEntity();
 	        } else if (isEnemyB) {
 	            GameEntity enemy = (GameEntity) bodyB.getUserData();
 	            weapon.dealDamage(enemy);
-	            enemy.stopEntity();
+	            if(Storage.getLevelNum() != 3)
+	            	enemy.stopEntity();
 	        }
 	    }
 	}
@@ -781,7 +807,8 @@ public class GameProj implements Screen, ContactListener {
 	    }
 	    
 	    if ((isMlemA && isCoinB) || (isMlemB && isCoinA) ||
-	    		(isPeepeeA && isCoinB) || (isPeepeeB && isCoinA)) {
+	    		(isPeepeeA && isCoinB) || (isPeepeeB && isCoinA) ||
+	    		(isPlayerA && isCoinB) || (isPlayerB && isCoinA)) {
 	        contact.setEnabled(false);
 	    }
 	    

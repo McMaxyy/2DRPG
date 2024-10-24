@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "MapVillage.tmx",
+    "activeFile": "Map0.tmx",
     "expandedProjectPaths": [
         "villageTiles",
         "tiles",
@@ -21,48 +21,68 @@
         "C:/Users/Max/Documents/repos/2DRPG/level1.tmx#tileSet-hd": {
             "scaleInDock": 1
         },
+        "Forest Objects.tsx": {
+            "scaleInDock": 0.125,
+            "scaleInEditor": 1
+        },
         "Map0.tmx": {
             "expandedObjectLayers": [
-                7,
-                10
+                13,
+                10,
+                7
             ],
-            "scale": 0.5,
-            "selectedLayer": 4,
+            "scale": 0.33,
+            "selectedLayer": 1,
             "viewCenter": {
-                "x": 1024,
-                "y": 596
+                "x": 1175.7575757575755,
+                "y": 466.66666666666663
             }
         },
         "Map1.tmx": {
             "expandedObjectLayers": [
                 8,
+                6,
                 9,
-                7,
-                6
+                7
             ],
             "scale": 0.33,
-            "selectedLayer": 4,
+            "selectedLayer": 0,
             "viewCenter": {
-                "x": 1221.212121212121,
-                "y": 860.6060606060605
+                "x": 1218.1818181818182,
+                "y": 851.5151515151517
+            }
+        },
+        "MapBoss1.tmx": {
+            "scale": 0.5,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 928,
+                "y": 992
             }
         },
         "MapVillage.tmx": {
             "expandedObjectLayers": [
-                7,
+                13,
                 6,
-                5
+                5,
+                7,
+                12,
+                11
             ],
-            "scale": 0.5,
+            "scale": 1,
             "selectedLayer": 3,
             "viewCenter": {
-                "x": 914,
-                "y": 832
+                "x": 1389,
+                "y": 966
             }
+        },
+        "VillageObjects.tsx": {
+            "scaleInDock": 0.125,
+            "scaleInEditor": 0.33
         },
         "tiles/IdkFloor.tsx": {
             "dynamicWrapping": true,
-            "scaleInDock": 1,
+            "scaleInDock": 0.5,
             "scaleInEditor": 1
         },
         "villageTiles/Buildings.tsx": {
@@ -104,23 +124,27 @@
         "Map0.tmx",
         "Map1.tmx",
         "MapVillage.tmx",
+        "MapBoss1.tmx",
         "villageTiles/Buildings.tsx",
-        "villageTiles/Floors.tsx"
+        "villageTiles/Floors.tsx",
+        "Forest Objects.tsx",
+        "VillageObjects.tsx"
     ],
     "project": "map0.tiled-project",
     "property.type": "bool",
     "recentFiles": [
         "tiles/IdkFloor.tsx",
-        "Map0.tmx",
-        "Map1.tmx",
+        "VillageObjects.tsx",
+        "Forest Objects.tsx",
         "villageTiles/Floors.tsx",
         "villageTiles/Buildings.tsx",
+        "MapBoss1.tmx",
         "MapVillage.tmx",
+        "Map1.tmx",
+        "Map0.tmx",
         "villageTiles/Village_environment_tiles_01.tsx",
         "villageTiles/Environment.tsx",
-        "villageTiles/Village.tsx",
-        "villageTiles/VillageBG.tsx",
-        "C:/Users/Max/Documents/repos/2DRPG/level1.tmx"
+        "villageTiles/Village.tsx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.margin": 4,
