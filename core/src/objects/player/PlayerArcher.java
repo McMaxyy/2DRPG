@@ -14,6 +14,7 @@ import com.badlogic.gdx.utils.Array;
 import config.Storage;
 import managers.AnimationManager;
 import managers.AnimationManager.State;
+import objects.Coin;
 import objects.GameEntity;
 import objects.attacks.ArcherAttacks;
 
@@ -57,7 +58,7 @@ public class PlayerArcher extends GameEntity {
         death = false;
         jumpCounter = 0;
         getAnimationManager().setState(AnimationManager.State.IDLE, "PlayerArcher");
-    }
+	}
     
     @Override
     protected void onDeath() {
@@ -270,14 +271,13 @@ public class PlayerArcher extends GameEntity {
         float heightTolerance = playerHeight / 300f;
 
         for (Body body : bodies) {
-            if (body.getType() == BodyDef.BodyType.DynamicBody && body != this.body && body != dog.getDogFollower()) {
+            if (body.getType() == BodyDef.BodyType.DynamicBody && body != this.body 
+            		&& body != dog.getDogFollower() && !(body.getUserData() instanceof Coin)) {
                 Vector2 bodyPos = body.getPosition();
                 Vector2 playerPos = this.body.getPosition();
 
-                // Check if the enemy is within the player's line of sight
                 boolean isInFacingDirection = (playerFacingRight && bodyPos.x > playerX) || (!playerFacingRight && bodyPos.x < playerX);
 
-                // Proceed only if the enemy is in the direction the player is facing
                 if (isInFacingDirection && Math.abs(bodyPos.y - playerY) <= heightTolerance) {
                     float distanceSquared = playerPos.dst2(bodyPos);
 

@@ -14,6 +14,7 @@ import config.Storage;
 import managers.AnimationManager;
 import managers.AnimationManager.State;
 import managers.AnimationManager.vfxState;
+import objects.Coin;
 import objects.GameEntity;
 import objects.attacks.SpellAttacks;
 
@@ -46,6 +47,7 @@ public class PlayerMage extends GameEntity {
         death = false;
         jumpCounter = 0;
         getAnimationManager().setState(AnimationManager.State.IDLE, "Pedro");
+        isMarkedForRemoval = false;
     }
     
     @Override
@@ -206,7 +208,8 @@ public class PlayerMage extends GameEntity {
         float heightTolerance = playerHeight / 300f;
 
         for (Body body : bodies) {
-            if (body.getType() == BodyDef.BodyType.DynamicBody && body != this.body) {
+            if (body.getType() == BodyDef.BodyType.DynamicBody && body != this.body &&
+            		!(body.getUserData() instanceof Coin)) {
                 Vector2 bodyPos = body.getPosition();
                 Vector2 playerPos = this.body.getPosition();
 

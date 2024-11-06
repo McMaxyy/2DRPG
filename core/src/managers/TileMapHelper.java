@@ -289,7 +289,7 @@ public class TileMapHelper {
             rectangle.getY() + rectangle.getHeight() / 2,
             rectangle.getWidth(),
             rectangle.getHeight(),
-            true,
+            false,
             gameP.getWorld()
         );
         
