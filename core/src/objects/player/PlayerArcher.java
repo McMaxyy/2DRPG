@@ -50,9 +50,6 @@ public class PlayerArcher extends GameEntity {
     }
 
 	public void respawn() {
-    	if (arrow != null) {
-    		arrow.removeArrow("Arrow");
-        }
         body.setTransform(initialX / 100f, initialY / 100f, 0);
         isDead = false;
         death = false;
@@ -326,8 +323,7 @@ public class PlayerArcher extends GameEntity {
             body.setLinearVelocity(0, 0);
             
             if (arrow != null) {
-            	arrow.removeArrow("Arrow");
-            	arrow = null;
+            	arrow.markForRemoval();
             }
             
             setMana(50, 50);

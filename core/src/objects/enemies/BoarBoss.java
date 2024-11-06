@@ -24,10 +24,8 @@ public class BoarBoss extends GameEntity {
     private final float RESPAWN_DELAY = 2f;
     public boolean shouldDestroy = false;
     private float deathX, deathY;
-    private Storage storage;
     private boolean isMarkedForRemoval = false;
 
-	// Dash and attack variables
     private boolean isDashing = false;
     private float dashCooldown = 5f;
     private float dashTimer = 0f;
@@ -42,8 +40,7 @@ public class BoarBoss extends GameEntity {
     public BoarBoss(float width, float height, Body body, World world) {
         super(width, height, body);
         this.animationManager = new AnimationManager();
-        this.storage = Storage.getInstance();
-        this.world = world;  // Assign world for projectile creation
+        this.world = world;
         death = false;
         setHealth(150, 150);
     }
@@ -72,13 +69,15 @@ public class BoarBoss extends GameEntity {
         }
 
         if (!isDashing && !isThrowing && !death) {
-            if (movingLeft) {
-                body.setLinearVelocity(new Vector2(-speed, body.getLinearVelocity().y));
-                animationManager.setFacingRight(true, "BoarBoss");
-            } else {
-                body.setLinearVelocity(new Vector2(speed, body.getLinearVelocity().y));
-                animationManager.setFacingRight(false, "BoarBoss");
-            }
+        	if(body.getLinearVelocity().y < speed) {
+        		if (movingLeft) {
+                    body.setLinearVelocity(new Vector2(-speed, body.getLinearVelocity().y));
+                    animationManager.setFacingRight(true, "BoarBoss");
+                } else {
+                    body.setLinearVelocity(new Vector2(speed, body.getLinearVelocity().y));
+                    animationManager.setFacingRight(false, "BoarBoss");
+                }
+        	}           
         }
         
         if (projectile != null) {
@@ -164,14 +163,13 @@ public class BoarBoss extends GameEntity {
         Vector2 dashVelocity = new Vector2(movingLeft ? -dashSpeed : dashSpeed, body.getLinearVelocity().y);
         body.setLinearVelocity(dashVelocity);
 
-        // Set animation to attack charge
         getAnimationManager().setState(AnimationManager.State.ATTACK_CHARGE, "BoarBoss");
     }
 
     private void stopDash() {
         isDashing = false;
-        body.setLinearVelocity(0, body.getLinearVelocity().y);  // Stop movement
-        getAnimationManager().setState(AnimationManager.State.RUNNING, "BoarBoss");  // Reset animation to running
+        body.setLinearVelocity(0, body.getLinearVelocity().y);
+        getAnimationManager().setState(AnimationManager.State.RUNNING, "BoarBoss");
     }
 
     private void startThrowAttack() {
