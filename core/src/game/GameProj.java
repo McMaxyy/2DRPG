@@ -226,7 +226,7 @@ public class GameProj implements Screen, ContactListener {
     }
 
     @Override
-    public void render(float delta) { 
+    public void render(float delta) {    	
     	if (PlayerMelee.death && !Storage.isPlayerDead()) {
     		playerMelee.checkRespawn(); 
             return;
@@ -373,8 +373,9 @@ public class GameProj implements Screen, ContactListener {
 
 	@Override
     public void resize(int width, int height) {
-        vp.update(width, height);
-        hudViewport.update(width, height);
+        vp.update(width, height, true);
+        camera.setToOrtho(false, width, height);
+        hudViewport.update(width, height, true);
         hudCamera.setToOrtho(false, width, height);
     }
 
